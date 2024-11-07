@@ -1,6 +1,7 @@
 //basic library to test motor controls
 
 #include <Adafruit_MotorShield.h>
+#include <Arduino_LSM6DS3.h>
 
 // Create the motor shield object with the default I2C address
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
@@ -109,9 +110,15 @@ class MainMotors {
         MR_run(BACKWARD);
     }
 
+    void 
+
     
 }
 
+
+int calc_angular_speed() {
+    IMU.readGyroscope();
+}
 
 
 void setup() {
@@ -127,6 +134,7 @@ void setup() {
     MainMotors main_motors;
     main_motors.set_speed(0);
     main_motors.stop();
+    IMU.begin();
 
 }
 
@@ -141,5 +149,10 @@ void loop() {
     main_motors.go_backward();
     delay(2000);
     main_motors.stop();
+    delay(2000);
+    main_motors.turn_left(100);
+    delay(1000);
+    main_motors.stop();
+
 
 }
