@@ -16,6 +16,9 @@ class MainMotors {
         int max_speed = 255;
         int min_speed = 0;
         int speed = 0;
+        int l_speed;
+        int r_speed;
+
 
         //FORWARD = 1
         //BACKWARD = 2
@@ -35,14 +38,14 @@ class MainMotors {
 
     //joint function to set speed of both motors -- verified -- test for values out of range, i would assume they would be clipped to the max/min values
     void set_speed(int speed) {
-        speed = speed;
+        l_speed, r_speed, speed = speed;
         set_ML_speed(speed);
         set_MR_speed(speed);
     }
 
     //function to change speed of both motors -- verified
     void change_speed(int delta) {
-        speed += delta;
+        l_speed, r_speed, speed += delta;
         if (speed > max_speed) {
             speed = max_speed;
         } else if (speed < min_speed) {
@@ -50,21 +53,23 @@ class MainMotors {
         }
         set_speed(speed);
     }
+    
     void change_ML_speed(int delta) {
-        int new_speed = main_motor_left->getSpeed() + delta;
-        if (new_speed > max_speed) {
-            new_speed = max_speed;
-        } else if (new_speed < min_speed) {
-            new_speed = min_speed;
+        int l_speed = l_speed + delta;
+        if (l_speed > max_speed) {
+            l_speed = max_speed;
+        } else if (l_speed < min_speed) {
+            l_speed = min_speed;
         }
         set_ML_speed(new_speed);
     }
+
     void change_MR_speed(int delta) {
-        int new_speed = main_motor_right->getSpeed() + delta;
-        if (new_speed > max_speed) {
-            new_speed = max_speed;
-        } else if (new_speed < min_speed) {
-            new_speed = min_speed;
+        int r_speed = r_speed + delta;
+        if (r_speed > max_speed) {
+            r_speed = max_speed;
+        } else if (r_speed < min_speed) {
+            r_speed = min_speed;
         }
         set_MR_speed(new_speed);
     }
