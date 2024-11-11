@@ -1,24 +1,3 @@
-
-
-int leftlinesensorPin = 2;
-int rightlinesensorPin = 3; // Connect sensor to input pin 3
-
-
-void setup() {
- Serial.begin(9600); // Init the serial port
- pinMode(leftlinesensorPin, INPUT); // declare LED as output
- pinMode(rightlinesensorPin, INPUT); // declare Micro switch as input
-}
-void loop(){
- int valLeft = digitalRead(leftlinesensorPin); // read left input value
- Serial.print(valLeft);
- int valRight = digitalRead(rightlinesensorPin); // read right input value
- Serial.println(valRight);
- delay(100);
-}
-
-
-
 int left_sensor = 6; //set to safe pins
 int center_sensor = 7;
 int right_sensor = 8;
@@ -42,6 +21,7 @@ void setup() {
   pinMode(left_sensor, INPUT);
   pinMode(center_sensor, INPUT);
   pinMode(right_sensor, INPUT);
+  Serial.println("Initialized");
 }
 
 void loop() {

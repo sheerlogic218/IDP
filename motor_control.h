@@ -1,16 +1,18 @@
-//test for separating motor control into a class
+//test for separating motor control into a class, if doesnt work then copy/paste is fine
 
 #include <Adafruit_MotorShield.h>
 #include <Arduino_LSM6DS3.h>
 
-
+Adafruit_MotorShield AFMS = Adafruit_MotorShield();
+Adafruit_DCMotor *main_motor_left  = AFMS.getMotor(1); //motor pin 1
+Adafruit_DCMotor *main_motor_right = AFMS.getMotor(2); //motor pin 2
 
 //create class to control main motors
 class MainMotors {
     public:
-        Adafruit_MotorShield AFMS = Adafruit_MotorShield();
-        Adafruit_DCMotor *main_motor_left  = AFMS.getMotor(1); //motor pin 1
-        Adafruit_DCMotor *main_motor_right = AFMS.getMotor(2); //motor pin 2
+        // Adafruit_MotorShield AFMS = Adafruit_MotorShield();
+        // Adafruit_DCMotor *main_motor_left  = AFMS.getMotor(1); //motor pin 1
+        // Adafruit_DCMotor *main_motor_right = AFMS.getMotor(2); //motor pin 2
         int max_speed = 255;
         int min_speed = 0;
         int speed = 0;
@@ -31,7 +33,7 @@ class MainMotors {
         main_motor_right->setSpeed(speed);
     }
 
-    //joint function to set speed of both motors -- verified
+    //joint function to set speed of both motors -- verified -- test for values out of range, i would assume they would be clipped to the max/min values
     void set_speed(int speed) {
         speed = speed;
         set_ML_speed(speed);
@@ -47,6 +49,24 @@ class MainMotors {
             speed = min_speed;
         }
         set_speed(speed);
+    }
+    void change_ML_speed(int delta) {
+        int new_speed = main_motor_left->getSpeed() + delta;
+        if (new_speed > max_speed) {
+            new_speed = max_speed;
+        } else if (new_speed < min_speed) {
+            new_speed = min_speed;
+        }
+        set_ML_speed(new_speed);
+    }
+    void change_MR_speed(int delta) {
+        int new_speed = main_motor_right->getSpeed() + delta;
+        if (new_speed > max_speed) {
+            new_speed = max_speed;
+        } else if (new_speed < min_speed) {
+            new_speed = min_speed;
+        }
+        set_MR_speed(new_speed);
     }
 
     //due to the way the motors are wired they may have to be reversed, -- verified for current arrangement, ie forward is forward and turns are correct
