@@ -1,4 +1,4 @@
-//basic library to test motor controls
+//basic example to test motor controls
 
 #include <Adafruit_MotorShield.h>
 #include <Arduino_LSM6DS3.h>
