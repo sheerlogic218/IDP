@@ -121,15 +121,10 @@ class MainMotors {
 // }
 
 MainMotors main_motors;
+
 void setup() {
     Serial.begin(9600);
     Serial.println("attempting to start motor shield");
-    // try {           //try to start the motor shield
-    //     AFMS.begin();
-    // } catch (int e) {
-    //     Serial.println("failed to start motor shield");
-    //     while (1);          //halts the program if error occurs
-    // }
     if (!AFMS.begin()) {
         Serial.println("failed to start motor shield");
         while (1);          //halts the program if error occurs
