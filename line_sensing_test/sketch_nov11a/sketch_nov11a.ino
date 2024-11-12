@@ -136,11 +136,16 @@ MainMotors main_motors; //create main motors object
 int left_sensor = 4; 
 int center_sensor = 5;
 int right_sensor = 3;
+int far_left_sensor = 6;
+int far_right_sensor = 7;
 
 //initialize the states of the sensors
 int ls_state = 0;
 int cs_state = 0;
 int rs_state = 0;
+int fls_state = 0;
+int frs_state = 0;
+
 
 int soft_turn_rate = 10;
 
@@ -150,6 +155,24 @@ void read_sensors(){
     ls_state = digitalRead(left_sensor);
     cs_state = 0;// digitalRead(center_sensor);
     rs_state = digitalRead(right_sensor);
+    fls_state = digitalRead(far_left_sensor);
+    frs_state = digitalRead(far_right_sensor);
+}
+
+
+void junction(){
+    if (fls_state == 1 && frs_state == 0){
+        main_motors.change_MR_speed(20);
+        main_motors.go_forward();
+    }
+    else if (fls_state == 0 && frsfstate == 1){
+        main_motors.change_ML_speed(20);
+        mamaimotors.go_forward();
+    }
+    else if (fls_state == 1 && frs_state == 1) {
+        main_motors.change_MR_speed(5);
+        main_motors.go_forward();
+    }
 }
 
 
@@ -161,6 +184,8 @@ void setup() {
     pinMode(left_sensor, INPUT);
     pinMode(center_sensor, INPUT);
     pinMode(right_sensor, INPUT);
+    pinMode(far_left_sensor,INPUT);
+    pinMode(far_right_sensor, INPUT);
 
 }
 
@@ -185,6 +210,11 @@ void loop(){
         main_motors.set_speed(50);
         main_motors.go_backward();
     }
+    //junction logic
+    else {
+        junction()  
+    }
+    
     
 }
 
