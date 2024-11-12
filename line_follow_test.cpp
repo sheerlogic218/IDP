@@ -131,9 +131,9 @@ class MainMotors {
 MainMotors main_motors; //create main motors object
 
 //set to safe pins
-int left_sensor = 6; 
-int center_sensor = 7;
-int right_sensor = 8;
+int left_sensor = 4; 
+int center_sensor = 5;
+int right_sensor = 3;
 
 //initialize the states of the sensors
 int ls_state = 0;
