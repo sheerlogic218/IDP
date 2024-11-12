@@ -153,7 +153,7 @@ int soft_turn_rate = 10;
 void read_sensors(){
     //0 is black, 1 is white
     ls_state = digitalRead(left_sensor);
-    cs_state = 0;// digitalRead(center_sensor);
+    cs_state = 0;   // digitalRead(center_sensor);
     rs_state = digitalRead(right_sensor);
     fls_state = digitalRead(far_left_sensor);
     frs_state = digitalRead(far_right_sensor);
