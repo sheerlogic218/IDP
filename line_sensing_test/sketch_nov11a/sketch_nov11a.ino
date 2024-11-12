@@ -165,9 +165,9 @@ void junction(){
         main_motors.change_MR_speed(20);
         main_motors.go_forward();
     }
-    else if (fls_state == 0 && frsfstate == 1){
+    else if (fls_state == 0 && frs_state == 1) {
         main_motors.change_ML_speed(20);
-        mamaimotors.go_forward();
+        main_motors.go_forward();
     }
     else if (fls_state == 1 && frs_state == 1) {
         main_motors.change_MR_speed(5);
@@ -212,7 +212,7 @@ void loop(){
     }
     //junction logic
     else {
-        junction()  
+        junction();
     }
     
     
@@ -249,7 +249,7 @@ void loopaaaa() {
     
     //if right and center sensor on, slightly speed up left motor
     else if (ls_state == 0 && cs_state == 1 && rs_state == 1) {
-        main_motors.change_ML_speed(soft_turn_rate));
+        main_motors.change_ML_speed(soft_turn_rate);
         main_motors.go_forward();
     }
 }
