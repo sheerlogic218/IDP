@@ -148,7 +148,7 @@ int soft_turn_rate = 10;
 void read_sensors(){
     //0 is black, 1 is white
     ls_state = digitalRead(left_sensor);
-    cs_state = digitalRead(center_sensor);
+    cs_state = 0;// digitalRead(center_sensor);
     rs_state = digitalRead(right_sensor);
 }
 
@@ -164,7 +164,33 @@ void setup() {
 
 }
 
-void loop() {
+void loop(){
+    read_sensors();
+    //test code for 4 sensor following
+    if (ls_state == 1 && rs_state == 1) {
+        main_motors.set_speed(255);
+        main_motors.go_forward();
+    }
+    else if (ls_state == 1 && rs_state == 0) {
+        main_motors.change_MR_speed(10);
+        main_motors.go_forward();
+    }
+    
+    else if (ls_state == 0 && rs_state == 1) {
+        main_motors.change_ML_speed(10);
+        main_motors.go_forward();
+    }
+    //something gone wrong
+    else if (ls_state == 0 && rs_state == 0) {
+        main_motors.set_speed(50);
+        main_motors.go_backward();
+    }
+    
+}
+
+ 
+
+void loopaaaa() {
     read_sensors();
     //if only center sensor on, go straight
     if (ls_state == 0 && cs_state == 1 && rs_state == 0) {
