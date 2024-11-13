@@ -37,9 +37,14 @@ void junction2(){
 }
 
 void interrupt_function(){
-    state = !state;
-    //Serial.println(state);
+    volatile static unsigned long last_interrupt = 0;
+    unsigned long t = millis();
+    if (t - last_interrupt > 500UL){
+      state = !state;
     }
+    last_interrupt = t;
+    //Serial.println(state);
+  }
 
 void setup() {
     pinMode(3,INPUT);
@@ -62,6 +67,10 @@ void loop(){
   //Serial.println(state);
   if (state) {
     Serial.println("we are running");
+    }
+  else {
+    Serial.println("we are not running");
+  }
     //read_sensors();
     //test code for 4 sensor following
     // if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
@@ -91,7 +100,7 @@ void loop(){
     //     Serial.println("at junction");
     //     junction();
     // }
-  }
+
 }
 
 
