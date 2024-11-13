@@ -5,7 +5,6 @@
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *main_motor_left  = AFMS.getMotor(1); //motor pin 1
 Adafruit_DCMotor *main_motor_right = AFMS.getMotor(2); //motor pin 2
-
 //create class to control main motors
 class MainMotors {
     public:
@@ -19,9 +18,10 @@ class MainMotors {
         //BACKWARD = 2
 
         //test values
-        int wheel_radius = 5; //mm
-        int wheel_base = 50; //mm
+        float wheel_radius = 32.5; //mm
+        int wheel_base = 164; //mm
         int max_wheel_speed = 255; //max angular speed of wheel
+        int sensor_wheel_dist = 110;//mm
 
     //simple interface for using built in functions -- verified
     void set_ML_speed(int speed) {
@@ -123,6 +123,15 @@ class MainMotors {
         set_speed(speed);
         ML_run(FORWARD);
         MR_run(BACKWARD);
+    }
+
+    void move_forward(int dist) {
+        stop();
+        set_speed(100);
+        int factor = (100/255)*max_wheel_speed;
+        delay(1000*dist/factor);
+
+
     }
 
 };
