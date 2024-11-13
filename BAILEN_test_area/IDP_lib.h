@@ -17,11 +17,13 @@ class MainMotors {
 
         //FORWARD = 1
         //BACKWARD = 2
+        float Pi = 3.14159;
 
         //test values
         float wheel_radius = 32.5; //mm
         int wheel_base = 164; //mm
-        int max_wheel_speed = 255; //max angular speed of wheel
+        float max_wheel_anglular_speed = 360/(2*Pi); //max angular speed of wheel, radians per second
+        float max_wheel_speed = max_wheel_anglular_speed*wheel_radius; //max linear speed of wheel
         int sensor_wheel_dist = 110;//mm
 
     //simple interface for using built in functions -- verified
@@ -129,11 +131,33 @@ class MainMotors {
     void move_forward(int dist) {
         stop();
         set_speed(100);
-        int factor = (100/255)*max_wheel_speed;
+        float factor = (100/255)*max_wheel_speed;
+        go_forward();
         delay(1000*dist/factor);
-
-
+        stop();
     }
+
+    void turn_90_left() {
+        stop();
+        set_MR_speed(100);
+        set_ML_speed(0);
+        float factor = (100/255)*max_wheel_angular_speed*(wheel_radius/wheel_base);
+        go_forward();
+        delay(1000*Pi/(2*factor));
+        stop();
+    }
+
+    void turn_90_right() {
+        stop();
+        set_ML_speed(100);
+        set_MR_speed(0);
+        float factor = (100/255)*max_wheel_angular_speed*(wheel_radius/wheel_base);
+        go_forward();
+        delay(1000*Pi/(2*factor));
+        stop();
+    }
+
+
 
 };
 
