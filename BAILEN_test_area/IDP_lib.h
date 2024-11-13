@@ -19,9 +19,10 @@ class MainMotors {
         //BACKWARD = 2
 
         //test values
-        int wheel_radius = 5; //mm
-        int wheel_base = 50; //mm
+        float wheel_radius = 32.5; //mm
+        int wheel_base = 164; //mm
         int max_wheel_speed = 255; //max angular speed of wheel
+        int sensor_wheel_dist = 110;//mm
 
     //simple interface for using built in functions -- verified
     void set_ML_speed(int speed) {
@@ -125,22 +126,31 @@ class MainMotors {
         MR_run(BACKWARD);
     }
 
+    void move_forward(int dist) {
+        stop();
+        set_speed(100);
+        int factor = (100/255)*max_wheel_speed;
+        delay(1000*dist/factor);
+
+
+    }
+
 };
 
 MainMotors main_motors; //create main motors object
 
 //set to safe pins
-int left_sensor = 4; 
-int center_sensor = 5;
-int right_sensor = 3;
-int far_left_sensor = 6;
+int far_left_sensor = 4;
+int left_sensor = 5; 
+//int center_sensor = 5;
+int right_sensor = 6;
 int far_right_sensor = 7;
 
 //initialize the states of the sensors
-int ls_state = 0;
-int cs_state = 0;
-int rs_state = 0;
 int fls_state = 0;
+int ls_state = 0;
+//int cs_state = 0;
+int rs_state = 0;
 int frs_state = 0;
 
 
@@ -149,9 +159,9 @@ int soft_turn_rate = 10;
 //function to read data from the sensors
 void read_sensors(){
     //0 is black, 1 is white
-    ls_state = digitalRead(left_sensor);
-    cs_state = 0;   // digitalRead(center_sensor);
-    rs_state = digitalRead(right_sensor);
     fls_state = digitalRead(far_left_sensor);
+    ls_state = digitalRead(left_sensor);
+    //cs_state = 0;   // digitalRead(center_sensor);
+    rs_state = digitalRead(right_sensor);
     frs_state = digitalRead(far_right_sensor);
 }
