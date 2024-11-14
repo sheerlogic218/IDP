@@ -5,42 +5,67 @@
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *main_motor_left  = AFMS.getMotor(1); //motor pin 1
 Adafruit_DCMotor *main_motor_right = AFMS.getMotor(2); //motor pin 2
+
+volatile byte state = LOW;
+
 //create class to control main motors
 class MainMotors {
     public:
         int max_speed = 255;
         int min_speed = 0;
         int speed = 0;
-        int l_speed;
-        int r_speed;
+        int l_speed = 0;
+        int r_speed = 0;
 
         //FORWARD = 1
         //BACKWARD = 2
+        float Pi = 3.14159;
 
         //test values
         float wheel_radius = 32.5; //mm
-        int wheel_base = 164; //mm
-        int max_wheel_speed = 255; //max angular speed of wheel
+        int wheel_base = 170; //mm
+        float max_wheel_angular_speed = 1.95*Pi;//(5*360)/(5*2*Pi); //max angular speed of wheel, radians per second
+        //double wheel_angular_speed_100 = 0;
+        float max_wheel_speed = max_wheel_angular_speed*wheel_radius; //max linear speed of wheel mm/s
         int sensor_wheel_dist = 110;//mm
+        
 
     //simple interface for using built in functions -- verified
-    void set_ML_speed(int speed) {
-        main_motor_left->setSpeed(speed);
+    void set_ML_speed(int l_speed) {
+        if (l_speed > max_speed) {
+          l_speed = max_speed;
+        }
+        else if (l_speed < min_speed) {
+          l_speed = min_speed;
+        }
+        main_motor_left->setSpeed(l_speed);
     }
-    void set_MR_speed(int speed) {
-        main_motor_right->setSpeed(speed);
+    void set_MR_speed(int r_speed) {
+        if (r_speed > max_speed) {
+          r_speed = max_speed;
+        }
+        else if (r_speed < min_speed) {
+          r_speed = min_speed;
+        }
+        main_motor_right->setSpeed(r_speed);
     }
 
     //joint function to set speed of both motors -- verified -- test for values out of range, i would assume they would be clipped to the max/min values by default
     void set_speed(int speed) {
-        l_speed, r_speed, speed = speed;
-        set_ML_speed(speed);
-        set_MR_speed(speed);
+        if (speed > max_speed) {
+          speed = max_speed;
+        }
+        else if (speed < min_speed) {
+          speed = min_speed;
+        }
+        l_speed = r_speed = speed;
+        set_ML_speed(l_speed);
+        set_MR_speed(r_speed);
     }
 
     //function to change speed of both motors -- verified
     void change_speed(int delta) {
-        l_speed, r_speed, speed += delta;
+        l_speed = r_speed = speed += delta;
         if (speed > max_speed) {
             speed = max_speed;
         } else if (speed < min_speed) {
@@ -49,21 +74,11 @@ class MainMotors {
         set_speed(speed);
     }
     void change_ML_speed(int delta) {
-        int l_speed = speed + delta;
-        if (l_speed > max_speed) {
-            l_speed = max_speed;
-        } else if (l_speed < min_speed) {
-            l_speed = min_speed;
-        }
+        l_speed += delta;
         set_ML_speed(l_speed);
     }
     void change_MR_speed(int delta) {
-        int r_speed = speed + delta;
-        if (r_speed > max_speed) {
-            r_speed = max_speed;
-        } else if (r_speed < min_speed) {
-            r_speed = min_speed;
-        }
+        r_speed += delta;
         set_MR_speed(r_speed);
     }
 
@@ -127,12 +142,43 @@ class MainMotors {
 
     void move_forward(int dist) {
         stop();
-        set_speed(100);
-        int factor = (100/255)*max_wheel_speed;
-        delay(1000*dist/factor);
-
-
+        int move_speed = 200;
+        set_speed(move_speed);
+        //float factor = (move_speed/255.0) * max_wheel_speed;
+        unsigned long t = (1000.0*dist)/( (move_speed/255.0) * max_wheel_speed );
+        //Serial.println(factor);
+        //Serial.print("In move_forward, delay=");
+        //Serial.println(t);
+        go_forward();
+        delay(t);
+        stop();
     }
+
+    void turn_90_left() {
+        stop();
+        int turn_speed = 200;
+        set_MR_speed(turn_speed);
+        set_ML_speed(0);
+        double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
+        unsigned long t = 1000.0*Pi/(2*factor);
+        go_forward();
+        delay(t);
+        stop();
+    }
+
+    void turn_90_right() {
+        stop();
+        int turn_speed = 200;
+        set_ML_speed(turn_speed);
+        set_MR_speed(0);
+        double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
+        unsigned long t = 1000.0*Pi/(2*factor);
+        go_forward();
+        delay(t);
+        stop();
+    }
+
+
 
 };
 
@@ -164,3 +210,40 @@ void read_sensors(){
     rs_state = digitalRead(right_sensor);
     frs_state = digitalRead(far_right_sensor);
 }
+
+
+
+void interrupt_function(){
+    volatile static unsigned long last_interrupt = 0;
+    unsigned long t = millis();
+    if (t - last_interrupt > 500UL){
+      state = !state;
+    }
+    last_interrupt = t;
+  }
+
+void setup() {
+    pinMode(3,INPUT);
+    while ( !digitalRead(3) );
+    Serial.begin(9600);
+    Serial.println("a");
+    attachInterrupt(digitalPinToInterrupt(3), interrupt_function, RISING);
+    if (AFMS.begin()){
+      Serial.println("AFMS connected");
+    }
+    else{
+      Serial.println("AFMS not connected");
+      while(1);
+    }
+    main_motors.stop();
+    pinMode(left_sensor, INPUT);
+    //pinMode(center_sensor, INPUT);
+    pinMode(right_sensor, INPUT);
+    pinMode(far_left_sensor,INPUT);
+    pinMode(far_right_sensor, INPUT);
+    
+}
+
+
+
+
