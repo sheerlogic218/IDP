@@ -73,7 +73,7 @@ void loop(){
     read_sensors();
     //test code for 4 sensor following
     if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-        main_motors.set_speed(200);
+        main_motors.set_speed(230);
         main_motors.go_forward();
         Serial.println("on line");
     }
@@ -96,7 +96,7 @@ void loop(){
     //junction logic
     else if(fls_state == 1 || frs_state == 1){
         Serial.println("at junction");
-        main_motors.move_forward(30);
+        main_motors.move_forward(20);
         junction();
     }
     //delay(100);
