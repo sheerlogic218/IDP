@@ -13,7 +13,6 @@ const int WEST = 3;
 int ROBOT_DIRECTION = NORTH; // Direction the robot is currently facing
 
 // Maximum number of nodes in the navigation map
-const int MAX_NODES = 16; // Updated to 16 to include node 15
 bool junction_present = false; // Flag to indicate if a junction is present
 
 // Adjacency map representing connections between nodes and their directions

@@ -11,7 +11,7 @@
           "${file}",
           "-o",
           "${fileDirname}/${fileBasenameNoExtension}",
-          "-target","arm64-apple-macos"
+          "-target","arm64-apple-macos",
           "-std=gnu++14"
         ],
         "options": {

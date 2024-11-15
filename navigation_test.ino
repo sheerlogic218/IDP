@@ -12,30 +12,28 @@ const int EAST = 1;
 const int SOUTH = 2;
 const int WEST = 3;
 
-bool junction_present = false;
-
 // Initialize the adjacency map with proper nested map initialization
 map<int, std::map<int, int> > adjacent;
 
 void populate_node_map()
 {
-        // Populate the adjacency list
-    adjacent[0] = { {NORTH, 1} };
-    adjacent[1] = { {EAST, 3}, {SOUTH, 0}, {WEST, 11} };
-    adjacent[2] = { {NORTH, 11} };
-    adjacent[3] = { {NORTH, 5}, {SOUTH, 4}, {WEST, 1} };
-    adjacent[4] = { {NORTH, 3} };
-    adjacent[5] = { {NORTH, 7}, {SOUTH, 3}, {WEST, 6} };
-    adjacent[6] = { {NORTH, 14}, {EAST, 5}, {WEST, 10} };
-    adjacent[7] = { {SOUTH, 5}, {WEST, 12} };
-    adjacent[8] = { {EAST, 12}, {SOUTH, 14}, {WEST, 9} };
-    adjacent[9] = { {EAST, 8}, {SOUTH, 10} };
-    adjacent[10] = { {NORTH, 9}, {EAST, 6}, {SOUTH, 11} };
-    adjacent[11] = { {NORTH, 10}, {EAST, 1}, {SOUTH, 2} };
-    adjacent[12] = { {EAST, 7}, {SOUTH, 13}, {WEST, 8} };
-    adjacent[13] = { {NORTH, 12} };
-    adjacent[14] = { {NORTH, 8}, {SOUTH, 6}, {WEST, 15} };
-    adjacent[15] = { {EAST, 14} };
+    // Populate the adjacency list
+    adjacent[0] = { {1, NORTH} };
+    adjacent[1] = { {3, EAST}, {0, SOUTH}, {11, WEST} };
+    adjacent[2] = { {11, NORTH} };
+    adjacent[3] = { {5, NORTH}, {4, SOUTH}, {1, WEST} };
+    adjacent[4] = { {3, NORTH} };
+    adjacent[5] = { {7, NORTH}, {3, SOUTH}, {6, WEST} };
+    adjacent[6] = { {14, NORTH}, {5, EAST}, {10, WEST} };
+    adjacent[7] = { {5, SOUTH}, {12, WEST} };
+    adjacent[8] = { {12, EAST}, {14, SOUTH}, {9, WEST} };
+    adjacent[9] = { {8, EAST}, {10, SOUTH} };
+    adjacent[10] = { {9, NORTH}, {6, EAST}, {11, SOUTH} };
+    adjacent[11] = { {10, NORTH}, {1, EAST}, {2, SOUTH} };
+    adjacent[12] = { {7, EAST}, {13, SOUTH}, {8, WEST} };
+    adjacent[13] = { {12, NORTH} };
+    adjacent[14] = { {8, NORTH}, {6, SOUTH}, {15, WEST} };
+    adjacent[15] = { {14, EAST} };
 }
 
 std::vector<int[2]> traversed;
@@ -95,15 +93,6 @@ void traverseToNode(int goalNode, int currentNode)      //the goal of this funct
         }
 
     }
-}
-
-int get_direction(int currentNode, int targetNode) {
-    for (const auto& direction_pair : adjacent[currentNode]) {
-        if (direction_pair.second == targetNode) {
-            return direction_pair.first; // Returns direction constant (NORTH, EAST, etc.)
-        }
-    }
-    return -1; // Direction not found
 }
 
 void turn_left()
