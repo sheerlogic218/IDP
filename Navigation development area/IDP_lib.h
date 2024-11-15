@@ -1,10 +1,14 @@
 #include <Adafruit_MotorShield.h>
 #include <Arduino_LSM6DS3.h>
+#include <StandardCplusplus.h>
 
 //required for navigation code
 #include <vector>
 #include <map>
-using namespace std;
+
+// Ensure using the std namespace or prefix with std::
+using std::vector;
+// using std::map;
 
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
@@ -199,64 +203,138 @@ class MainMotors {
 
 class Navigator 
 {
-    public:
-        // Initialize the adjacency map with proper nested map initialization
-        map<int, std::map<int, int> > adjacent;
+    // Initialize the adjacency map with proper nested map initialization
+    public: std::map<int, std::map<int, int> > adjacent;
 
         
+    // Populates the adjacency map with node connections and directions
     void populate_node_map()
     {
-        // Populate the adjacency list
-        adjacent[0] = { {1, NORTH} };
-        adjacent[1] = { {3, EAST}, {0, SOUTH}, {11, WEST} };
-        adjacent[2] = { {11, NORTH} };
-        adjacent[3] = { {5, NORTH}, {4, SOUTH}, {1, WEST} };
-        adjacent[4] = { {3, NORTH} };
-        adjacent[5] = { {7, NORTH}, {3, SOUTH}, {6, WEST} };
-        adjacent[6] = { {14, NORTH}, {5, EAST}, {10, WEST} };
-        adjacent[7] = { {5, SOUTH}, {12, WEST} };
-        adjacent[8] = { {12, EAST}, {14, SOUTH}, {9, WEST} };
-        adjacent[9] = { {8, EAST}, {10, SOUTH} };
-        adjacent[10] = { {9, NORTH}, {6, EAST}, {11, SOUTH} };
-        adjacent[11] = { {10, NORTH}, {1, EAST}, {2, SOUTH} };
-        adjacent[12] = { {7, EAST}, {13, SOUTH}, {8, WEST} };
-        adjacent[13] = { {12, NORTH} };
-        adjacent[14] = { {8, NORTH}, {6, SOUTH}, {15, WEST} };
-        adjacent[15] = { {14, EAST} };
+        // Populate the adjacency list with proper std::map initializations
+        adjacent[0] = std::map<int, int>();
+        adjacent[0].insert(std::make_pair(NORTH, 1));
+        Serial.println("Added first values to adjacent");
+
+        adjacent[1] = std::map<int, int>();
+        adjacent[1].insert(std::make_pair(EAST, 3));
+        adjacent[1].insert(std::make_pair(SOUTH, 0));
+        adjacent[1].insert(std::make_pair(WEST, 11));
+
+        adjacent[2] = std::map<int, int>();
+        adjacent[2].insert(std::make_pair(NORTH, 11));
+
+        adjacent[3] = std::map<int, int>();
+        adjacent[3].insert(std::make_pair(NORTH, 5));
+        adjacent[3].insert(std::make_pair(SOUTH, 4));
+        adjacent[3].insert(std::make_pair(WEST, 1));
+
+        adjacent[4] = std::map<int, int>();
+        adjacent[4].insert(std::make_pair(NORTH, 3));
+
+        adjacent[5] = std::map<int, int>();
+        adjacent[5].insert(std::make_pair(NORTH, 7));
+        adjacent[5].insert(std::make_pair(SOUTH, 3));
+        adjacent[5].insert(std::make_pair(WEST, 6));
+
+        adjacent[6] = std::map<int, int>();
+        adjacent[6].insert(std::make_pair(NORTH, 14));
+        adjacent[6].insert(std::make_pair(EAST, 5));
+        adjacent[6].insert(std::make_pair(WEST, 10));
+        Serial.println("Added 6th values to adjacent");
+
+        adjacent[7] = std::map<int, int>();
+        adjacent[7].insert(std::make_pair(SOUTH, 5));
+        adjacent[7].insert(std::make_pair(WEST, 12));
+
+        adjacent[8] = std::map<int, int>();
+        adjacent[8].insert(std::make_pair(EAST, 12));
+        adjacent[8].insert(std::make_pair(SOUTH, 14));
+        adjacent[8].insert(std::make_pair(WEST, 9));
+
+        // adjacent[9] = std::map<int, int>();
+        // adjacent[9].insert(std::make_pair(EAST, 8));
+        // adjacent[9].insert(std::make_pair(SOUTH, 10));
+
+        // adjacent[10] = std::map<int, int>();
+        // adjacent[10].insert(std::make_pair(NORTH, 9));
+        // adjacent[10].insert(std::make_pair(EAST, 6));
+        // adjacent[10].insert(std::make_pair(SOUTH, 11));
+
+        // adjacent[11] = std::map<int, int>();
+        // adjacent[11].insert(std::make_pair(NORTH, 10));
+        // adjacent[11].insert(std::make_pair(EAST, 1));
+        // adjacent[11].insert(std::make_pair(SOUTH, 2));
+
+        // adjacent[12] = std::map<int, int>();
+        // adjacent[12].insert(std::make_pair(EAST, 7));
+        // adjacent[12].insert(std::make_pair(SOUTH, 13));
+        // adjacent[12].insert(std::make_pair(WEST, 8));
+
+        // adjacent[13] = std::map<int, int>();
+        // adjacent[13].insert(std::make_pair(NORTH, 12));
+
+        // adjacent[14] = std::map<int, int>();
+        // adjacent[14].insert(std::make_pair(NORTH, 8));
+        // adjacent[14].insert(std::make_pair(SOUTH, 6));
+        // adjacent[14].insert(std::make_pair(WEST, 15));
+
+        // adjacent[15] = std::map<int, int>();
+        // adjacent[15].insert(std::make_pair(EAST, 14));
+        Serial.println("Added 15th values to adjacent");
     }
 
-    Navigator()
-    {
-        populate_node_map();
-    }
 
+
+    // Generates a navigation path from the current node to the target node
     vector<int> generateNavigationPath(int current_node, int target_node)
     {
-      int search_node = current_node;
-      int depth = 0;
-      int new_node;
-      std::vector<int> current_route = {search_node};
-      std::vector<std::vector<int>> possible_routes = {search_node};
-      while(depth < 100)                                           //there are two ways to make this run faster, eliminate routes that end at useless nodes (dead ends and already found routes) and eliminate routes that get to the same non target node in the same speed.
-      {
-          for(int j = 0, j < possible_routes, j++)                //continue extending all destination nodes
-          {
-              for(int i = 0, i < 4, i++)    //add next nodes to possible_routes, increasing possibilites
-              {
-                  new_node = adjacent{search_node}{i};
-                  if(new_node != -1)
-                  {
-                      current_route.push_back(new_node);
-                      if(new_node = target_node)
-                      {
-                          return current_route;
-                      }
-                      possible_routes.push_back{current_route};
-                  }
-              }
-          }
-          depth++;
-      }
+        int search_node = current_node; // Node currently being searched
+        int depth = 0; // Current depth of the search
+        int new_node; // Newly discovered node
+        vector<int> current_route = {search_node}; // Current navigation route
+        vector<vector<int>> possible_routes = vector<vector<int>>({current_route}); // List of possible routes to explore
+        vector<int> found_nodes = {search_node}; // List of nodes that have been visited
+
+        Serial.println("Starting navigation from node " + String(current_node) + " to node " + String(target_node));
+
+        while(depth < 10) // Limit the search depth to prevent infinite loops
+        {
+            Serial.println("Depth: " + String(depth) + ", Possible routes: " + String(possible_routes.size()));
+
+            for(int j = 0; j < possible_routes.size(); j++) // Iterate through all possible routes
+            {
+                current_route = possible_routes[j];
+                search_node = current_route.back(); // Get the last node in the current route
+                Serial.print("Extending route: ");
+                for (int node : current_route) {
+                    Serial.print(String(node) + " ");
+                }
+                Serial.println();
+
+                // Iterate over all adjacent nodes from the current search node
+                for (std::pair<int, int> direction_pair : adjacent[search_node])
+                {
+                    new_node = direction_pair.second; // Get the connected node
+                    vector<int> new_route = current_route;
+                    // Check if the new node has not been visited yet
+                    if(std::find(found_nodes.begin(), found_nodes.end(), new_node) == found_nodes.end())
+                    {
+                        found_nodes.push_back(new_node); // Mark the new node as visited
+                        new_route.push_back(new_node); // Add the new node to the current route
+                        Serial.println("Found new node " + String(new_node) + " from node " + String(search_node));
+                        if(new_node == target_node) // Check if the target node is reached
+                        {
+                            Serial.println("Target node " + String(target_node) + " reached!");
+                            return new_route; // Return the completed route
+                        }
+                        possible_routes.push_back(new_route); // Add the new route to the list of possible routes
+                    }  
+                }
+            }
+            depth++; // Increment the search depth
+        }
+        Serial.println("No path found to target node " + String(target_node));
+        return vector<int>(); // Return empty vector if no path is found
     }
 
     int generateTurnDirection(int behind_node, int junction_node, int target_node)
@@ -265,7 +343,11 @@ class Navigator
       int target_direction = adjacent[junction_node][target_node];
       return (target_direction - current_direction);
     }
-
+    
+    Navigator()
+    {
+        populate_node_map();
+    }
 };
 
 MainMotors main_motors; //create main motors object
@@ -310,10 +392,12 @@ void interrupt_function(){
   }
 
 void setup() {
-    pinMode(3,INPUT);
-    while ( !digitalRead(3) );
     Serial.begin(9600);
     Serial.println("a");
+    delay(1000);
+    Serial.println("b");
+    pinMode(3,INPUT);
+    while ( !digitalRead(3) );
     attachInterrupt(digitalPinToInterrupt(3), interrupt_function, RISING);
     if (AFMS.begin()){
       Serial.println("AFMS connected");
@@ -331,7 +415,7 @@ void setup() {
 
     //Navigation code
     main_navigator = Navigator();
-    
+    Serial.println("Setup complete");
 }
 
 

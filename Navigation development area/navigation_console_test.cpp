@@ -1,163 +1,120 @@
-#include <vector>
-#include <map>
-#include <string>
-#include <iostream> // Include iostream if you plan to use std::cout
-using namespace std;
+#include "IDP_lib.h"
+// #include <vector>
 
-// Define direction constants as const to prevent modification
-const int NORTH = 0;
-const int EAST = 1;
-const int SOUTH = 2;
-const int WEST = 3;
+// int target_node = 1;
+// int behind_node = 0;
+// int ahead_node = 1;
+// int direction = 0;
+// std::vector<int> path;
+// int path_progress;
 
-int ROBOT_DIRECTION = NORTH; // Direction the robot is currently facing
+// void junction(int behind_node, int junction_node, int target_node){
+//     Serial.println("Entering junction function");
+//     Serial.print("behind_node: ");
+//     Serial.println(behind_node);
+//     Serial.print("junction_node: ");
+//     Serial.println(junction_node);
+//     Serial.print("target_node: ");
+//     Serial.println(target_node);
+    
+//     int turn_direction = main_navigator.generateTurnDirection(behind_node, junction_node, target_node);
+//     Serial.print("Turn direction: ");
+//     Serial.println(turn_direction);
+    
+//     if (turn_direction == -1){
+//         main_motors.turn_90_left();
+//         Serial.println("Turning 90 degrees left");
+//     }
+//     else if (turn_direction == 1) {
+//         main_motors.turn_90_right();
+//         Serial.println("Turning 90 degrees right");
+//     }
+//     else if (turn_direction == 0) {
+//         main_motors.turn_90_left();
+//         Serial.println("No turn, proceeding straight");
+//     }
+// }
 
-// Maximum number of nodes in the navigation map
-bool junction_present = false; // Flag to indicate if a junction is present
 
-// Adjacency map representing connections between nodes and their directions
-map<int, std::map<int, int> > adjacent;
-
-// Populates the adjacency map with node connections and directions
-void populate_node_map()
-{
-    // Populate the adjacency list
-    adjacent[0] = { {1, NORTH} };
-    adjacent[1] = { {3, EAST}, {0, SOUTH}, {11, WEST} };
-    adjacent[2] = { {11, NORTH} };
-    adjacent[3] = { {5, NORTH}, {4, SOUTH}, {1, WEST} };
-    adjacent[4] = { {3, NORTH} };
-    adjacent[5] = { {7, NORTH}, {3, SOUTH}, {6, WEST} };
-    adjacent[6] = { {14, NORTH}, {5, EAST}, {10, WEST} };
-    adjacent[7] = { {5, SOUTH}, {12, WEST} };
-    adjacent[8] = { {12, EAST}, {14, SOUTH}, {9, WEST} };
-    adjacent[9] = { {8, EAST}, {10, SOUTH} };
-    adjacent[10] = { {9, NORTH}, {6, EAST}, {11, SOUTH} };
-    adjacent[11] = { {10, NORTH}, {1, EAST}, {2, SOUTH} };
-    adjacent[12] = { {7, EAST}, {13, SOUTH}, {8, WEST} };
-    adjacent[13] = { {12, NORTH} };
-    adjacent[14] = { {8, NORTH}, {6, SOUTH}, {15, WEST} };
-    adjacent[15] = { {14, EAST} };
-}
-
-void handle_non_navigation_events_until_junction()
-{
-    cout << "moving forward..." << endl;
-}
-
-// Generates a navigation path from the current node to the target node
-vector<int> generateNavigationPath(int current_node, int target_node)
-{
-    int search_node = current_node; // Node currently being searched
-    int depth = 0; // Current depth of the search
-    int new_node; // Newly discovered node
-    vector<int> current_route = {search_node}; // Current navigation route
-    vector<vector<int>> possible_routes = vector<vector<int>>({current_route}); // List of possible routes to explore
-    vector<int> found_nodes = {search_node}; // List of nodes that have been visited
-
-    cout << "Starting navigation from node " << current_node << " to node " << target_node << endl;
-
-    while(depth < 10) // Limit the search depth to prevent infinite loops
-    {
-        cout << "Depth: " << depth << ", Possible routes: " << possible_routes.size() << endl;
-
-        for(int j = 0; j < possible_routes.size(); j++) // Iterate through all possible routes
-        {
-            current_route = possible_routes[j];
-            search_node = current_route.back(); // Get the last node in the current route
-            cout << "Extending route: ";
-            for (int node : current_route) {
-                cout << node << " ";
-            }
-            cout << endl;
-
-            // Iterate over all adjacent nodes from the current search node
-            for (pair<const int, int>& direction_pair : adjacent[search_node])
-            {
-                new_node = direction_pair.first; // Get the connected node
-                vector<int> new_route = current_route;
-                // Check if the new node has not been visited yet
-                if(find(found_nodes.begin(), found_nodes.end(), new_node) == found_nodes.end())
-                {
-                    found_nodes.push_back(new_node); // Mark the new node as visited
-                    new_route.push_back(new_node); // Add the new node to the current route
-                    cout << "Found new node " << new_node << " from node " << search_node << endl;
-                    if(new_node == target_node) // Check if the target node is reached
-                    {
-                        cout << "Target node " << target_node << " reached!" << endl;
-                        return new_route; // Return the completed route
-                    }
-                    possible_routes.push_back(new_route); // Add the new route to the list of possible routes
-                }  
-            }
-        }
-        depth++; // Increment the search depth
-    }
-    cout << "No path found to target node " << target_node << endl;
-    return vector<int>(); // Return empty vector if no path is found
-}
-
-void traverseToNode(int initial_behind_node, int initial_ahead_node, int goal_node)
-{
-    int behind = initial_behind_node;
-    int ahead = initial_ahead_node;
-
-    int route_progress = 1; //has the location of the 
-
-    vector<int> path = generateNavigationPath(initial_ahead_node, goal_node); // Generate path from node a to node b
-
-    while(route_progress < path.size())
-    {
-        handle_non_navigation_events_until_junction();
-
-        // Junction reached
-        // Set the robot direction based on the initial nodes
-        ROBOT_DIRECTION = adjacent[behind][ahead];
-        behind = ahead;
-        ahead = path[route_progress+1]; // Assuming the first node is the current node
+// void loop(){
+//     Serial.println("Loop started");
+//     if (state) {
+//         Serial.println("State is active");
+//         if(ahead_node == target_node)
+//         {
+//             Serial.println("Ahead node matches target node");
+//             target_node = millis() % 16;
+//             Serial.print("New target_node: ");
+//             Serial.println(target_node);
+//             path_progress = 0;
+//             path = main_navigator.generateNavigationPath(ahead_node, target_node);
+//             Serial.println("Generated new navigation path");
+//         }
+//         Serial.println("We are running");
+//         read_sensors();
+//         Serial.println("Sensors read");
         
-        int next_direction = adjacent[behind][ahead];
-        int desired_turn = next_direction - ROBOT_DIRECTION;
+//         // Test code for 4 sensor following
+//         Serial.print("Sensor states - ls: ");
+//         Serial.print(ls_state);
+//         Serial.print(", rs: ");
+//         Serial.print(rs_state);
+//         Serial.print(", fls: ");
+//         Serial.print(fls_state);
+//         Serial.print(", frs: ");
+//         Serial.println(frs_state);
+        
+//         if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+//             main_motors.set_speed(230);
+//             main_motors.go_forward();
+//             Serial.println("On line: Moving forward at speed 230");
+//         }
+//         else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+//             main_motors.change_MR_speed(10);
+//             main_motors.go_forward();
+//             Serial.println("Right of line: Adjusting MR speed by 10");
+//         }
+//         else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+//             main_motors.change_ML_speed(10);
+//             main_motors.go_forward();
+//             Serial.println("Left of line: Adjusting ML speed by 10");
+//         }
+//         // Something gone wrong
+//         else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+//             main_motors.stop();
+//             Serial.println("Error: No sensors active, stopping motors");
+//         }
+//         // Junction logic
+//         else if(fls_state == 1 || frs_state == 1){
+//             Serial.println("At junction");
+//             path_progress++;
+//             Serial.print("Path progress: ");
+//             Serial.println(path_progress);
+//             if(path_progress < path.size()){
+//                 junction(behind_node, ahead_node, path[path_progress]);
+//             }
+//             else{
+//                 Serial.println("Path completed");
+//             }
+//         }
+//         //delay(100);
+//     }
+//     else {
+//         Serial.println("State is inactive, stopping motors");
+//         main_motors.stop();
+//     }
+//     Serial.println("Loop ended\n");
+// }
 
-        switch(desired_turn) {
-            case NORTH:
-                // Handle north turn
-                break;
-            case EAST:
-                // Handle east turn
-                break;
-            case SOUTH:
-                // Handle south turn
-                break;
-            case WEST:
-                // Handle west turn
-                break;
-            default:
-                // Handle default case
-                break;
-        }
-        route_progress ++;
-    }
+// void setup() {
+//     Serial.begin(9600);
+//     Serial.println("a");
+//     delay(1000);
+//     Serial.println("b");
+// }
 
-}
-
-
-
-int main() {
-
-    populate_node_map(); // Initialize the adjacency map
-
-    vector<int> path = generateNavigationPath(15, 0); // Generate path from node a to node b
-
-    if (!path.empty()) {
-        cout << "Path found: ";
-        for (int node : path) {
-            cout << node << " ";
-        }
-        cout << endl;
-    } else {
-        cout << "No path found." << endl;
-    }
-
-    return 0;
+void loop ()
+{
+      Serial.println("b");
+          delay(1000);
 }
