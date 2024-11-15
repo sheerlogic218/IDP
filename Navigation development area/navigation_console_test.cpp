@@ -41,6 +41,11 @@ void populate_node_map()
     adjacent[15] = { {14, EAST} };
 }
 
+void handle_non_navigation_events_until_junction()
+{
+    cout << "moving forward..." << endl;
+}
+
 // Generates a navigation path from the current node to the target node
 vector<int> generateNavigationPath(int current_node, int target_node)
 {
@@ -109,9 +114,10 @@ void traverseToNode(int initial_behind_node, int initial_ahead_node, int goal_no
         // Junction reached
         // Set the robot direction based on the initial nodes
         ROBOT_DIRECTION = adjacent[behind][ahead];
+        behind = ahead;
         ahead = path[route_progress+1]; // Assuming the first node is the current node
         
-        int next_direction = adjacent[ahead][next_node];
+        int next_direction = adjacent[behind][ahead];
         int desired_turn = next_direction - ROBOT_DIRECTION;
 
         switch(desired_turn) {
@@ -136,10 +142,7 @@ void traverseToNode(int initial_behind_node, int initial_ahead_node, int goal_no
 
 }
 
-void handle_non_navigation_events_until_junction()
-{
-    cout << "moving forward..." << endl;
-}
+
 
 int main() {
 
