@@ -144,38 +144,40 @@ class MainMotors {
         stop();
         int move_speed = 200;
         set_speed(move_speed);
-        //float factor = (move_speed/255.0) * max_wheel_speed;
-        unsigned long t = (1000.0*dist)/( (move_speed/255.0) * max_wheel_speed );
-        //Serial.println(factor);
-        //Serial.print("In move_forward, delay=");
-        //Serial.println(t);
+        unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*max_wheel_speed );
         go_forward();
         delay(t);
         stop();
     }
 
-    void turn_90_left() {
-        stop();
-        int turn_speed = 200;
-        set_MR_speed(turn_speed);
-        set_ML_speed(0);
-        double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
-        unsigned long t = 1000.0*Pi/(2*factor);
-        go_forward();
-        delay(t);
-        stop();
+    void turn_90_left(bool move = true) {
+      if (move) {
+        move_forward(20);
+      }
+      stop();
+      int turn_speed = 200;
+      set_MR_speed(turn_speed);
+      set_ML_speed(0);
+      double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
+      unsigned long t = 1000.0*Pi/(2*factor);
+      go_forward();
+      delay(t);
+      stop();
     }
 
-    void turn_90_right() {
-        stop();
-        int turn_speed = 200;
-        set_ML_speed(turn_speed);
-        set_MR_speed(0);
-        double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
-        unsigned long t = 1000.0*Pi/(2*factor);
-        go_forward();
-        delay(t);
-        stop();
+    void turn_90_right(bool move = true) {
+      if (move) {
+        move_forward(20);
+      }
+      stop();
+      int turn_speed = 200;
+      set_ML_speed(turn_speed);
+      set_MR_speed(0);
+      double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
+      unsigned long t = 1000.0*Pi/(2*factor);
+      go_forward();
+      delay(t);
+      stop();
     }
 
 
