@@ -3,34 +3,40 @@
 #include <map>
 #include <string>
 
+using namespace std;
 volatile byte state = LOW;
 
-int NORTH = 0;
-int EAST = 1;
-int SOUTH = 2;
-int WEST = 3;
+// Define direction constants as const to prevent modification
+const int NORTH = 0;
+const int EAST = 1;
+const int SOUTH = 2;
+const int WEST = 3;
 
 bool junction_present = false;
 
+// Initialize the adjacency map with proper nested map initialization
+map<int, std::map<int, int> > adjacent;
 
-std::map<int, std::map<int, int>> adjacent[MAX_NODES] = {
-    { 0, { {NORTH, 1} } },                         // Node 0
-    { 1, { {EAST, 3}, {SOUTH, 0}, {WEST, 11} } },  // Node 1
-    { 2, { {NORTH, 11} } },                        // Node 2
-    { 3, { {NORTH, 5}, {SOUTH, 4}, {WEST, 1} } },  // Node 3
-    { 4, { {NORTH, 3} } },                         // Node 4
-    { 5, { {NORTH, 7}, {SOUTH, 3}, {WEST, 6} } },  // Node 5
-    { 6, { {NORTH, 14}, {EAST, 5}, {WEST, 10} } }, // Node 6
-    { 7, { {SOUTH, 5}, {WEST, 12} } },             // Node 7
-    { 8, { {EAST, 12}, {SOUTH, 14}, {WEST, 9} } }, // Node 8
-    { 9, { {EAST, 8}, {SOUTH, 10} } },             // Node 9
-    { 10, { {NORTH, 9}, {EAST, 6}, {SOUTH, 11} } }, // Node 10
-    { 11, { {NORTH, 10}, {EAST, 1}, {SOUTH, 2} } }, // Node 11
-    { 12, { {EAST, 7}, {SOUTH, 13}, {WEST, 8} } },  // Node 12
-    { 13, { {NORTH, 12} } },                        // Node 13
-    { 14, { {NORTH, 8}, {SOUTH, 6}, {WEST, 15} } }, // Node 14
-    { 15, { {EAST, 14} } }                          // Node 15
-};
+void populate_node_map()
+{
+        // Populate the adjacency list
+    adjacent[0] = { {NORTH, 1} };
+    adjacent[1] = { {EAST, 3}, {SOUTH, 0}, {WEST, 11} };
+    adjacent[2] = { {NORTH, 11} };
+    adjacent[3] = { {NORTH, 5}, {SOUTH, 4}, {WEST, 1} };
+    adjacent[4] = { {NORTH, 3} };
+    adjacent[5] = { {NORTH, 7}, {SOUTH, 3}, {WEST, 6} };
+    adjacent[6] = { {NORTH, 14}, {EAST, 5}, {WEST, 10} };
+    adjacent[7] = { {SOUTH, 5}, {WEST, 12} };
+    adjacent[8] = { {EAST, 12}, {SOUTH, 14}, {WEST, 9} };
+    adjacent[9] = { {EAST, 8}, {SOUTH, 10} };
+    adjacent[10] = { {NORTH, 9}, {EAST, 6}, {SOUTH, 11} };
+    adjacent[11] = { {NORTH, 10}, {EAST, 1}, {SOUTH, 2} };
+    adjacent[12] = { {EAST, 7}, {SOUTH, 13}, {WEST, 8} };
+    adjacent[13] = { {NORTH, 12} };
+    adjacent[14] = { {NORTH, 8}, {SOUTH, 6}, {WEST, 15} };
+    adjacent[15] = { {EAST, 14} };
+}
 
 std::vector<int[2]> traversed;
 
@@ -42,7 +48,7 @@ void traverseToNode(int goalNode, int currentNode)      //the goal of this funct
     int route_progress = 0;
     while(!junction_present) 
     {
-          //Serial.println(state);
+        //Serial.println(state);
         if (state) {
             Serial.println("we are running");
             read_sensors();
@@ -120,7 +126,7 @@ void turn_forward()
 }
 
 
-std::vector<int> generateNavigationPath(int current_node, int target_node)
+vector<int> generateNavigationPath(int current_node, int target_node)
 {
     int search_node = current_node;
     int depth = 0;

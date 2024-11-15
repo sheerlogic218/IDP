@@ -51,6 +51,9 @@
         "vector": "cpp",
         "algorithm": "cpp",
         "__tree": "cpp",
-        "map": "cpp"
-    }
+        "map": "cpp",
+        "iostream": "cpp"
+    },
+    "debug.hideLauncherWhileDebugging": false,
+    "editor.fontFamily": "SF Mono, Menlo, Monaco, 'Courier New', monospace"
 }
