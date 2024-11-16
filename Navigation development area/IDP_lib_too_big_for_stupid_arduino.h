@@ -251,35 +251,35 @@ class Navigator
         adjacent[8].insert(std::make_pair(SOUTH, 14));
         adjacent[8].insert(std::make_pair(WEST, 9));
 
-        // adjacent[9] = std::map<int, int>();
-        // adjacent[9].insert(std::make_pair(EAST, 8));
-        // adjacent[9].insert(std::make_pair(SOUTH, 10));
+        adjacent[9] = std::map<int, int>();
+        adjacent[9].insert(std::make_pair(EAST, 8));
+        adjacent[9].insert(std::make_pair(SOUTH, 10));
 
-        // adjacent[10] = std::map<int, int>();
-        // adjacent[10].insert(std::make_pair(NORTH, 9));
-        // adjacent[10].insert(std::make_pair(EAST, 6));
-        // adjacent[10].insert(std::make_pair(SOUTH, 11));
+        adjacent[10] = std::map<int, int>();
+        adjacent[10].insert(std::make_pair(NORTH, 9));
+        adjacent[10].insert(std::make_pair(EAST, 6));
+        adjacent[10].insert(std::make_pair(SOUTH, 11));
 
-        // adjacent[11] = std::map<int, int>();
-        // adjacent[11].insert(std::make_pair(NORTH, 10));
-        // adjacent[11].insert(std::make_pair(EAST, 1));
-        // adjacent[11].insert(std::make_pair(SOUTH, 2));
+        adjacent[11] = std::map<int, int>();
+        adjacent[11].insert(std::make_pair(NORTH, 10));
+        adjacent[11].insert(std::make_pair(EAST, 1));
+        adjacent[11].insert(std::make_pair(SOUTH, 2));
 
-        // adjacent[12] = std::map<int, int>();
-        // adjacent[12].insert(std::make_pair(EAST, 7));
-        // adjacent[12].insert(std::make_pair(SOUTH, 13));
-        // adjacent[12].insert(std::make_pair(WEST, 8));
+        adjacent[12] = std::map<int, int>();
+        adjacent[12].insert(std::make_pair(EAST, 7));
+        adjacent[12].insert(std::make_pair(SOUTH, 13));
+        adjacent[12].insert(std::make_pair(WEST, 8));
 
-        // adjacent[13] = std::map<int, int>();
-        // adjacent[13].insert(std::make_pair(NORTH, 12));
+        adjacent[13] = std::map<int, int>();
+        adjacent[13].insert(std::make_pair(NORTH, 12));
 
-        // adjacent[14] = std::map<int, int>();
-        // adjacent[14].insert(std::make_pair(NORTH, 8));
-        // adjacent[14].insert(std::make_pair(SOUTH, 6));
-        // adjacent[14].insert(std::make_pair(WEST, 15));
+        adjacent[14] = std::map<int, int>();
+        adjacent[14].insert(std::make_pair(NORTH, 8));
+        adjacent[14].insert(std::make_pair(SOUTH, 6));
+        adjacent[14].insert(std::make_pair(WEST, 15));
 
-        // adjacent[15] = std::map<int, int>();
-        // adjacent[15].insert(std::make_pair(EAST, 14));
+        adjacent[15] = std::map<int, int>();
+        adjacent[15].insert(std::make_pair(EAST, 14));
         Serial.println("Added 15th values to adjacent");
     }
 
