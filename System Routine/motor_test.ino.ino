@@ -9,6 +9,7 @@ const int LEFT = 3;
 const int SPECIALl = 4;
 const int SPECIALr = 5;
 const int SPECIAL = 6;
+const int FORWARD_THEN_BACKWARD = 11;
 const int REVERSE = 8;
 const int RLEFT = 9;
 const int RRIGHT = 10;
@@ -31,8 +32,8 @@ int special_progress = 0;
 int special_direction = 0;
 bool is_magnet = false; //Magnetic is recyclable
 int special_path[4][5] = {
-    {STRAIGHT_ON, RIGHT, REVERSE, RRIGHT},
-    {RIGHT, RIGHT, REVERSE, RLEFT},
+    {STRAIGHT_ON, RIGHT, FORWARD_THEN_BACKWARD, RRIGHT},
+    {RIGHT, RIGHT, FORWARD_THEN_BACKWARD, RLEFT},
     {LEFT, STOP, STOP, STOP},
     {STRAIGHT_ON, LEFT, RIGHT, STOP},
 };
@@ -129,6 +130,9 @@ void junction(){
             case RRIGHT:
                 main_motors.turn_90_right_back();
                 break;
+            case FORWARD_THEN_BACKWARD:
+                main_motors.move_backward(100);
+                main_motors.move_backward(100);
             default:
                 special_mode = 0;
                 special_progress = -1;
