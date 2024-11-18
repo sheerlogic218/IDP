@@ -5,7 +5,7 @@ const int SOUTH = 2;
 const int WEST = 3;
 
 
-int node_map[][] = {
+int node_map[][3][2] = {
     {{1,NORTH}},//0
     {{0,SOUTH},{3,EAST},{11,WEST}},//1
     {{11,NORTH}},//2
@@ -26,24 +26,9 @@ int node_map[][] = {
 
 int current_node = 0;
 int current_direction = NORTH;
+int path[16];
+//find path from current node to target node, sets path to the turns required to get to the target node
 
-//find path from current node to target node
-int find_path(int current_node, int target_node){
-    int path[] = {};
-    int path_index = 0;
-    int current_node = current_node;
-    int target_node = target_node;
-    while(current_node != target_node){
-        for(int i = 0; i < sizeof(node_map[current_node])/sizeof(node_map[current_node][0]); i++){
-            if(node_map[current_node][i][0] == target_node){
-                path[path_index] = node_map[current_node][i][1];
-                path_index++;
-                current_node = target_node;
-            }
-        }
-    }
-    return path;
-}
 
 //test pathing from node 0 to node 2
 int path[] = find_path(0,5);
