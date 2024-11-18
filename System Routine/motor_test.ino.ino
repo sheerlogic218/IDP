@@ -9,7 +9,9 @@ const int LEFT = 3;
 const int SPECIALl = 4;
 const int SPECIALr = 5;
 const int SPECIAL = 6;
-const int REVERSE_TURN = 8;
+const int REVERSE = 8;
+const int RLEFT = 9;
+const int RRIGHT = 10;
 const int STOP = 7;
 
 int path[23] = {LEFT, //BLICK!
@@ -28,9 +30,9 @@ int special_mode = 0;
 int special_progress = 0;
 int special_direction = 0;
 bool is_magnet = false; //Magnetic is recyclable
-int special_path[4][4] = {
-    {STRAIGHT_ON, RIGHT, STOP, STOP},
-    {RIGHT, RIGHT, STOP, STOP},
+int special_path[4][5] = {
+    {STRAIGHT_ON, RIGHT, REVERSE, RRIGHT},
+    {RIGHT, RIGHT, REVERSE, RLEFT},
     {LEFT, STOP, STOP, STOP},
     {STRAIGHT_ON, LEFT, RIGHT, STOP},
 };
@@ -63,11 +65,11 @@ void junction(){
             // main_motors.special_action();
             if(is_magnet)
             {
-                special_mode = 2;
+                special_mode = 4;
             }
             else
             {
-                special_mode = 1;
+                special_mode = 3;
             }
             break;
         case SPECIALl:
@@ -75,11 +77,11 @@ void junction(){
             // main_motors.special_action();
             if(is_magnet)
             {
-                special_mode = 4;
+                special_mode = 2;
             }
             else
             {
-                special_mode = 3;
+                special_mode = 1;
             }
             break;
         case STOP:
@@ -114,7 +116,18 @@ void junction(){
                 // Code to turn left
                 main_motors.turn_90_left();
                 break;
-            case REVERSE_TURN:
+            case REVERSE:
+                main_motors.go_backward();
+                while(fls_state == 0 && frs_state ==0)     //add alignment
+                {
+                    delay(50);
+                }
+                break;
+            case RLEFT:
+                main_motors.turn_90_left_back();
+                break;
+            case RRIGHT:
+                main_motors.turn_90_right_back();
                 break;
             default:
                 special_mode = 0;

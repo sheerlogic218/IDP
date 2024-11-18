@@ -149,6 +149,15 @@ class MainMotors {
         delay(t);
         stop();
     }
+    void move_backward(int dist) {
+        stop();
+        int move_speed = 200;
+        set_speed(move_speed);
+        unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*max_wheel_speed );
+        go_backward();
+        delay(t);
+        stop();
+    }
 
     void turn_90_left(bool move = true) {
       if (move) {
@@ -176,6 +185,46 @@ class MainMotors {
       double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
       unsigned long t = 1000.0*Pi/(2*factor);
       go_forward();
+      delay(t);
+      stop();
+    }
+
+    void turn_90_left_back(bool move = true){
+      if (move) {
+        move_forward(20);
+      }
+      stop();
+      int turn_speed = 200;
+      set_ML_speed(turn_speed);
+      set_MR_speed(0);
+      double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
+      unsigned long t = 1000.0*Pi/(2*factor);
+      go_backward();
+      delay(t);
+      stop();
+    }
+    void turn_90_right_back(bool move = true){
+      if (move) {
+        move_forward(20);
+      }
+      stop();
+      int turn_speed = 200;
+      set_MR_speed(turn_speed);
+      set_ML_speed(0);
+      double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
+      unsigned long t = 1000.0*Pi/(2*factor);
+      go_backward();
+      delay(t);
+      stop();
+    }
+
+    void turn_180(){
+      stop();
+      int turn_speed = 180;
+      set_speed(turn_speed);
+      unsigned long t = 1000.0*Pi/( 2*(turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base) );
+      ML_run(BACKWARD);
+      MR_run(FORWARD);
       delay(t);
       stop();
     }
@@ -225,11 +274,6 @@ void interrupt_function(){
   }
 
 void setup() {
-    pinMode(3,INPUT);
-    while ( !digitalRead(3) );
-    Serial.begin(9600);
-    Serial.println("a");
-    attachInterrupt(digitalPinToInterrupt(3), interrupt_function, RISING);
     if (AFMS.begin()){
       Serial.println("AFMS connected");
     }
@@ -238,11 +282,19 @@ void setup() {
       while(1);
     }
     main_motors.stop();
+    pinMode(3,INPUT);
+    while ( !digitalRead(3) );
+    Serial.begin(9600);
+    Serial.println("a");
+    attachInterrupt(digitalPinToInterrupt(3), interrupt_function, RISING);
     pinMode(left_sensor, INPUT);
     //pinMode(center_sensor, INPUT);
     pinMode(right_sensor, INPUT);
     pinMode(far_left_sensor,INPUT);
     pinMode(far_right_sensor, INPUT);
+    delay(1000);
+    main_motors.turn_180();
+    delay(1000);
     
 }
 
