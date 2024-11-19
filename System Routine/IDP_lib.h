@@ -118,13 +118,11 @@ class MainMotors {
         MR_run(BACKWARD);
     }
     //cuts power and motors come to a stop -- verified
-    void stop(bool fast == false) {       //in some cases i dont want to use stop (see move forward/backward)
+    void stop() {
         //cuts power to both motors
-        if(!fast){
-          set_speed(0);
-          main_motor_left->run(RELEASE);
-          main_motor_right->run(RELEASE);
-        }
+        set_speed(0);
+        main_motor_left->run(RELEASE);
+        main_motor_right->run(RELEASE);
     }
     //test function to allow for faster stops -- unverified
     void hard_stop() {
@@ -145,23 +143,23 @@ class MainMotors {
         MR_run(BACKWARD);
     }
 
-    void move_forward(int dist, bool fast==false) {
-        stop(fast);
+    void move_forward(int dist) {
+        stop();
         int move_speed = 200;
         set_speed(move_speed);
         unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*max_wheel_speed );
         go_forward();
         delay(t);
-        stop(fast);
+        stop();
     }
-    void move_backward(int dist, bool fast==false) {
-        stop(fast);
+    void move_backward(int dist) {
+        stop();
         int move_speed = 200;
         set_speed(move_speed);
         unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*max_wheel_speed );
         go_backward();
         delay(t);
-        stop(fast);
+        stop();
     }
 
     void turn_90_left(bool move = true) {

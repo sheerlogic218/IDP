@@ -15,7 +15,7 @@ const int RLEFT = 9;
 const int RRIGHT = 10;
 const int STOP = 7;
 
-int path[23] = {LEFT, //BLICK!
+int path[24] = {SPECIALl, LEFT, //BLICK!
 RIGHT, STRAIGHT_ON, RIGHT, SPECIALl, //END SPECIAL AT MIDDLE BLOCK
 RIGHT, RIGHT, RIGHT, SPECIALl,       //END SPECIAL AT MIDDLE BLOCK
 LEFT, LEFT, LEFT, SPECIALr,          //END SPECIAL AT MIDDLE BLOCK
@@ -32,7 +32,7 @@ int special_progress = 0;
 int special_direction = 0;
 bool is_magnet = false; //Magnetic is recyclable
 int special_path[4][5] = {
-    {STRAIGHT_ON, RIGHT, FORWARD_THEN_BACKWARD, RRIGHT},
+    {LEFT, FORWARD_THEN_BACKWARD, FORWARD_THEN_BACKWARD, RRIGHT},
     {RIGHT, RIGHT, FORWARD_THEN_BACKWARD, RLEFT},
     {LEFT, STOP, STOP, STOP},
     {STRAIGHT_ON, LEFT, RIGHT, STOP},
@@ -66,11 +66,11 @@ void junction(){
             // main_motors.special_action();
             if(is_magnet)
             {
-                special_mode = 4;
+                special_mode = 3;
             }
             else
             {
-                special_mode = 3;
+                special_mode = 2;
             }
             special_junction();
             break;
@@ -79,11 +79,11 @@ void junction(){
             // main_motors.special_action();
             if(is_magnet)
             {
-                special_mode = 2;
+                special_mode = 1;
             }
             else
             {
-                special_mode = 1;
+                special_mode = 0;
             }
             special_junction();
             break;
@@ -134,9 +134,21 @@ void special_junction()
                 main_motors.turn_90_right_back();
                 break;
             case FORWARD_THEN_BACKWARD:
-                main_motors.move_forward(100);
+                read_sensors();
+                while (ls_state == 1 || rs_state == 1)
+                {
+                    line_track_forward();
+                    read_sensors();
+                }
 
-                main_motors.move_backward(100);
+
+                while (fls_state == 0 || frs_state == 0)
+                {
+                    line_track_backward();
+                    read_sensors();
+                }
+                main_motors.turn_90_left_back();
+                break;
             default:
                 special_mode = -1;
                 special_progress = 0;
@@ -197,6 +209,7 @@ void line_track_backward()
     }
 }
 
+
 void loop(){
     //Serial.println(state);
     if (state) {
@@ -208,7 +221,7 @@ void loop(){
     }
 }
 
-void movement()
+void system_decisions()
 {
     Serial.println("we are running");
     line_track_forward();
