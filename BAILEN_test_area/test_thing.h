@@ -16,7 +16,7 @@ int node_map[][3][2] = {
     {{5,SOUTH},{12,WEST}},//7
     {{12,EAST},{14,SOUTH},{9,WEST}}, //8
     {{8,EAST},{10,SOUTH}},//9
-    {{9,NORHT},{6,EAST},{11,SOUTH}},//10
+    {{9,NORTH},{6,EAST},{11,SOUTH}},//10
     {{10,NORTH},{1,EAST},{2,SOUTH}},//11
     {{7,EAST},{13,SOUTH},{8,WEST}},//12
     {{12,NORTH}},//13
