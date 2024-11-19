@@ -204,11 +204,11 @@ class MainMotors {
       }
       stop();
       int turn_speed = 200;
-      set_Ml_speed(turn_speed);
-      set_MR_speed(0);
+      set_MR_speed(turn_speed);
+      set_ML_speed(0);
       double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
       unsigned long t = 1000.0*Pi/(2*factor);
-      go_backward();
+      go_forward();
       delay(t);
       stop();
     }
@@ -218,11 +218,11 @@ class MainMotors {
       }
       stop();
       int turn_speed = 200;
-      set_MR_speed(turn_speed);
-      set_ML_speed(0);
+      set_ML_speed(turn_speed);
+      set_MR_speed(0);
       double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
       unsigned long t = 1000.0*Pi/(2*factor);
-      go_backward();
+      go_forward();
       delay(t);
       stop();
     }
@@ -355,6 +355,8 @@ void setup() {
     pinMode(right_sensor, INPUT);
     pinMode(far_left_sensor,INPUT);
     pinMode(far_right_sensor, INPUT);
+
+    main_motors.turn_90_left_back();
 
 }
 
