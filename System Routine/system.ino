@@ -31,11 +31,12 @@ int special_mode = -1;
 int special_progress = 0;
 int special_direction = 0;
 bool is_magnet = false; //Magnetic is recyclable
-int special_path[4][5] = {
-    {LEFT, FORWARD_THEN_BACKWARD, FORWARD_THEN_BACKWARD, RRIGHT},
-    {RIGHT, RIGHT, FORWARD_THEN_BACKWARD, RLEFT},
-    {LEFT, STOP, STOP, STOP},
-    {STRAIGHT_ON, LEFT, RIGHT, STOP},
+int special_path[5][6] = {
+    {STRAIGHT_ON, RIGHT, FORWARD_THEN_BACKWARD, RRIGHT, LEFT, STRAIGHT_ON},
+    {RIGHT, RIGHT, FORWARD_THEN_BACKWARD, RLEFT, STOP, STOP}, //rleft goes forward after
+    {LEFT, FORWARD_THEN_BACKWARD, RRIGHT, LEFT, STRAIGHT_ON, STOP},
+    {STRAIGHT_ON, LEFT, RIGHT, FORWARD_THEN_BACKWARD, RLEFT, STOP},
+    {LEFT, LEFT, FORWARD_THEN_BACKWARD, STOP, STOP, STOP},
 };
 
 void junction(){
@@ -83,7 +84,7 @@ void junction(){
             }
             else
             {
-                special_mode = 0;
+                special_mode = 4;
             }
             special_junction();
             break;
@@ -134,6 +135,7 @@ void special_junction()
                 main_motors.turn_90_right_back();
                 break;
             case FORWARD_THEN_BACKWARD:
+                main_motors.go_backward();
                 read_sensors();
                 while (ls_state == 1 || rs_state == 1)
                 {
@@ -141,8 +143,7 @@ void special_junction()
                     read_sensors();
                 }
 
-
-                while (fls_state == 0 || frs_state == 0)
+                while (fls_state == 0 && frs_state == 0)
                 {
                     line_track_backward();
                     read_sensors();
