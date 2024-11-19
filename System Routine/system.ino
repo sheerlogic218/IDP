@@ -135,8 +135,8 @@ void special_junction()
                 break;
             case FORWARD_THEN_BACKWARD:
                 main_motors.move_forward(100);
+
                 main_motors.move_backward(100);
-                delay(1000);
             default:
                 special_mode = -1;
                 special_progress = 0;
@@ -146,7 +146,7 @@ void special_junction()
 
 void line_track_forward()
 {
-        read_sensors();
+    read_sensors();
     //test code for 4 sensor following
     if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
         main_motors.set_speed(230);
@@ -170,13 +170,48 @@ void line_track_forward()
         Serial.println("something wrong");
     }
 }
+void line_track_backward()
+{
+    read_sensors();
+    //test code for 4 sensor following
+    if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+        main_motors.set_speed(230);
+        main_motors.go_backward();
+        Serial.println("on line");
+    }
+    else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+        main_motors.change_MR_speed(10);
+        main_motors.go_backward();
+        Serial.println("right of line");
+    }
+    
+    else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+        main_motors.change_ML_speed(10);
+        main_motors.go_backward();
+        Serial.println("left of line");
+    }
+    //something gone wrong
+    else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+        main_motors.stop();
+        Serial.println("something wrong");
+    }
+}
 
 void loop(){
     //Serial.println(state);
     if (state) {
-        Serial.println("we are running");
-        line_track_forward();
+        system_decisions();
     }
+    else {
+        Serial.println("we are not running");
+        main_motors.stop();
+    }
+}
+
+void movement()
+{
+    Serial.println("we are running");
+    line_track_forward();
     //junction logic
     if(fls_state == 1 || frs_state == 1){
         Serial.println("at junction");
@@ -190,13 +225,7 @@ void loop(){
             special_junction();
         }
     }
-
-  else {
-    Serial.println("we are not running");
-    main_motors.stop();
-  }
 }
-
 
 
 

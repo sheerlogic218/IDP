@@ -16,6 +16,7 @@ class MainMotors {
         int speed = 0;
         int l_speed = 0;
         int r_speed = 0;
+        int current_speed = 0;
 
         //FORWARD = 1
         //BACKWARD = 2
@@ -52,15 +53,19 @@ class MainMotors {
 
     //joint function to set speed of both motors -- verified -- test for values out of range, i would assume they would be clipped to the max/min values by default
     void set_speed(int speed) {
-        if (speed > max_speed) {
-          speed = max_speed;
+        if(speed != current_speed || l_speed != r_speed || r_speed != current_speed)  //HOPEFULLY AN OPTIMISATION TRICK
+        {
+          if (speed > max_speed) {
+            speed = max_speed;
+          }
+          else if (speed < min_speed) {
+            speed = min_speed;
+          }
+          l_speed = r_speed = speed;
+          set_ML_speed(l_speed);
+          set_MR_speed(r_speed);
+          current_speed = speed;
         }
-        else if (speed < min_speed) {
-          speed = min_speed;
-        }
-        l_speed = r_speed = speed;
-        set_ML_speed(l_speed);
-        set_MR_speed(r_speed);
     }
 
     //function to change speed of both motors -- verified
@@ -292,10 +297,7 @@ void setup() {
     pinMode(right_sensor, INPUT);
     pinMode(far_left_sensor,INPUT);
     pinMode(far_right_sensor, INPUT);
-    delay(1000);
-    main_motors.turn_180();
-    delay(1000);
-    
+    delay(50);
 }
 
 
