@@ -27,7 +27,7 @@ STOP //use comments to explain each part of the route.
 };
 int progress = 0;
 
-int special_mode = 0;
+int special_mode = -1;
 int special_progress = 0;
 int special_direction = 0;
 bool is_magnet = false; //Magnetic is recyclable
@@ -40,7 +40,7 @@ int special_path[4][5] = {
 
 void junction(){
     int turn_direction = path[progress];
-    progress ++;
+    progress++;
     switch(turn_direction) {
         case STRAIGHT_ON:
             // Code to go straight
@@ -72,6 +72,7 @@ void junction(){
             {
                 special_mode = 3;
             }
+            special_junction();
             break;
         case SPECIALl:
             // Code for special action
@@ -84,6 +85,7 @@ void junction(){
             {
                 special_mode = 1;
             }
+            special_junction();
             break;
         case STOP:
             // Default action
@@ -94,9 +96,10 @@ void junction(){
             main_motors.stop();
             break;
     }
+}
 
-    if(special_mode != 0)
-    {
+void special_junction()
+{
         special_direction = special_path[special_mode][special_progress];
         switch(special_direction) {
             case STRAIGHT_ON:
@@ -131,39 +134,19 @@ void junction(){
                 main_motors.turn_90_right_back();
                 break;
             case FORWARD_THEN_BACKWARD:
+                main_motors.move_forward(100);
                 main_motors.move_backward(100);
-                main_motors.move_backward(100);
+                delay(1000);
             default:
-                special_mode = 0;
-                special_progress = -1;
+                special_mode = -1;
+                special_progress = 0;
                 break;
         }
-    }
-    // if (fls_state == 1 && frs_state == 0){
-    //     // main_motors.change_MR_speed(40);
-    //     // main_motors.go_forward();
-    //     // delay(1000);
-    //     main_motors.turn_90_left();
-    // }
-    // else if (fls_state == 0 && frs_state == 1) {
-    //     // main_motors.change_ML_speed(40);
-    //     // main_motors.go_forward();
-    //     // delay(1000);
-    //     main_motors.turn_90_right();
-    // }
-    // else if (fls_state == 1 && frs_state == 1) {
-    //     // main_motors.change_MR_speed(20);
-    //     // main_motors.go_forward();
-    //     // delay(2000);
-    //     main_motors.turn_90_left();
-    // }
 }
 
-void loop(){
-  //Serial.println(state);
-  if (state) {
-    Serial.println("we are running");
-    read_sensors();
+void line_track_forward()
+{
+        read_sensors();
     //test code for 4 sensor following
     if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
         main_motors.set_speed(230);
@@ -186,14 +169,27 @@ void loop(){
         main_motors.stop();
         Serial.println("something wrong");
     }
+}
+
+void loop(){
+    //Serial.println(state);
+    if (state) {
+        Serial.println("we are running");
+        line_track_forward();
+    }
     //junction logic
-    else if(fls_state == 1 || frs_state == 1){
+    if(fls_state == 1 || frs_state == 1){
         Serial.println("at junction");
         //main_motors.move_forward(20);
-        junction();
+        if(special_mode == -1)
+        {
+            junction();
+        }
+        else
+        {
+            special_junction();
+        }
     }
-    //delay(100);
-  }
 
   else {
     Serial.println("we are not running");
