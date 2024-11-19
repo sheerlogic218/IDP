@@ -71,13 +71,13 @@ void loop(){
         Serial.println("on line");
     }
     else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
-        main_motors.change_MR_speed(10);
+        main_motors.change_MR_speed(12);
         main_motors.go_forward();
         Serial.println("right of line");
     }
     
     else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-        main_motors.change_ML_speed(10);
+        main_motors.change_ML_speed(12);
         main_motors.go_forward();
         Serial.println("left of line");
     }
@@ -85,6 +85,7 @@ void loop(){
     else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
         main_motors.stop();
         Serial.println("something wrong");
+        main_motors.move_backward(10);
     }
     //junction logic
     else if(fls_state == 1 || frs_state == 1){

@@ -1,10 +1,14 @@
 #include <Adafruit_MotorShield.h>
 #include <Arduino_LSM6DS3.h>
-
+#include <Servo.h>
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *main_motor_left  = AFMS.getMotor(1); //motor pin 1
 Adafruit_DCMotor *main_motor_right = AFMS.getMotor(2); //motor pin 2
+
+Servo left_servo;
+Servo right_servo;
+
 
 volatile byte state = LOW;
 
@@ -14,9 +18,9 @@ class MainMotors {
         int max_speed = 255;
         int min_speed = 0;
         int speed = 0;
+        int current_speed = 0;
         int l_speed = 0;
         int r_speed = 0;
-        int current_speed = 0;
 
         //FORWARD = 1
         //BACKWARD = 2
@@ -156,7 +160,7 @@ class MainMotors {
     }
     void move_backward(int dist) {
         stop();
-        int move_speed = 200;
+        int move_speed = 150;
         set_speed(move_speed);
         unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*max_wheel_speed );
         go_backward();
@@ -200,7 +204,7 @@ class MainMotors {
       }
       stop();
       int turn_speed = 200;
-      set_ML_speed(turn_speed);
+      set_Ml_speed(turn_speed);
       set_MR_speed(0);
       double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
       unsigned long t = 1000.0*Pi/(2*factor);
@@ -240,17 +244,62 @@ class MainMotors {
 
 MainMotors main_motors; //create main motors object
 
+class Servo_claws {
+  private:
+  int servo_time = 20;
+  int min_angle = 0;
+  int max_angle = 80;
+  int current_angle = 0;
+  int open_angle = 70;
+  //sets the servos to their "0" point
+  void go_zero(){
+      for (int angle = current_angle; angle >= 0; angle -= 1){
+        //left has "0" at 270 due to being mirrored
+        left_servo.write(max_angle-angle);
+        right_servo.write(angle);
+        Serial.println(angle);
+        //controlls the speed of the servo rotations
+        delay(servo_time);
+      }
+      current_angle = 0;
+  }
+  //turns the servos to a target angle relative to their "0"
+  void steady_turn(int target_angle){
+    if (target_angle<max_angle && target_angle > min_angle){
+      for (int angle = 0; angle <= target_angle; angle += 1){
+        //left has "0" at 270 due to being mirrored
+        left_servo.write(max_angle-angle);
+        right_servo.write(angle);
+        Serial.println(angle);
+        //controlls the speed of the servo rotations
+        delay(servo_time);
+      }
+      current_angle = target_angle;
+    }
+  }
+  public:
+  //means people cant mess up stuff by accessing turns directly
+  void open(){
+    steady_turn(open_angle);
+  }
+  void close(){
+    go_zero();
+  }
+  void straight_ahead(){
+    steady_turn(30);
+  }
+};
+Servo_claws Claws;
+
 //set to safe pins
 int far_left_sensor = 4;
 int left_sensor = 5; 
-//int center_sensor = 5;
 int right_sensor = 6;
 int far_right_sensor = 7;
 
 //initialize the states of the sensors
 int fls_state = 0;
 int ls_state = 0;
-//int cs_state = 0;
 int rs_state = 0;
 int frs_state = 0;
 
@@ -262,7 +311,6 @@ void read_sensors(){
     //0 is black, 1 is white
     fls_state = digitalRead(far_left_sensor);
     ls_state = digitalRead(left_sensor);
-    //cs_state = 0;   // digitalRead(center_sensor);
     rs_state = digitalRead(right_sensor);
     frs_state = digitalRead(far_right_sensor);
 }
@@ -279,6 +327,8 @@ void interrupt_function(){
   }
 
 void setup() {
+
+    //stops motors straight away
     if (AFMS.begin()){
       Serial.println("AFMS connected");
     }
@@ -287,17 +337,25 @@ void setup() {
       while(1);
     }
     main_motors.stop();
+    //waits for button press to start program
     pinMode(3,INPUT);
     while ( !digitalRead(3) );
+    //sets up the servo pins and holds at "0"
+    left_servo.attach(9);
+    right_servo.attach(10);
+    Claws.close();
+    delay(1000);
+    //sets up serial communication
     Serial.begin(9600);
     Serial.println("a");
+    //sets the interrupt pin
     attachInterrupt(digitalPinToInterrupt(3), interrupt_function, RISING);
+    //sets up line sensor pins
     pinMode(left_sensor, INPUT);
-    //pinMode(center_sensor, INPUT);
     pinMode(right_sensor, INPUT);
     pinMode(far_left_sensor,INPUT);
     pinMode(far_right_sensor, INPUT);
-    delay(50);
+
 }
 
 
