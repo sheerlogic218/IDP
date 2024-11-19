@@ -356,7 +356,6 @@ void setup() {
     pinMode(far_left_sensor,INPUT);
     pinMode(far_right_sensor, INPUT);
 
-    main_motors.turn_90_left_back();
 
 }
 
