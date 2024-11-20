@@ -74,10 +74,12 @@ void turn_junction(int turn_direction) {
         case SPECIAL_FROM_THE_LEFT:
             // Code for special action to the left
             special_mode = 0 + is_magnet;
+            turn_junction(get_turn_direction());
             break;
         case SPECIAL_FROM_THE_RIGHT:
             // Code for special action to the left
             special_mode = 2 + is_magnet;
+            turn_junction(get_turn_direction());
             break;
         default:
             // Default action for invalid direction
