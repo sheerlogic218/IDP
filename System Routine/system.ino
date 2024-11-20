@@ -12,9 +12,9 @@ const int RIGHT_DIP = 8;
 const int LEFT_DIP = 9;
 
 // constants for move directions
-const int FORWARD = 1;
+const int FORWARD_MOVE = 1;
 const int FORWARD_UNTIL_END_THEN_START_REVERSE = 2;
-const int REVERSE = 3;
+const int REVERSE_MOVE = 3;
 
 // Path array defining the robot's route
 int path[24] = {
@@ -45,7 +45,7 @@ int special_path[5][6] = {
 };
 
 // Junction function to handle the robot's movements at junctions
-void turn_junction() {
+void turn_junction(int turn_direction) {
     Serial.print("Junction turn_direction: ");
     Serial.println(turn_direction);
     switch (turn_direction) {
@@ -130,24 +130,24 @@ int get_turn_direction()
 
 void do_a_move()
 {
-    if(move_direction == FORWARD)
+    if(move_mode == FORWARD_MOVE)
     {
         line_track_forward();
     }
-    if(move_direction == FORWARD_UNTIL_END_THEN_START_REVERSE)
+    if(move_mode == FORWARD_UNTIL_END_THEN_START_REVERSE)
     {
         line_track_backward();
         if(ls_state == 0 && rs_state == 0)
         {
-            move_direction == REVERSE;
+            move_mode == REVERSE_MOVE;
         }
     }
-    if(move_direction == REVERSE)
+    if(move_mode == REVERSE_MOVE)
     {
         line_track_backward();
         if(fls_state == 1 || frs_state == 1)
         {
-            move_direction = FORWARD;
+            move_mode = FORWARD_MOVE;
         }
     }
 
