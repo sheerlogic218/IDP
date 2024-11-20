@@ -9,8 +9,6 @@ const int SPECIAL_FROM_THE_LEFT = 4;
 const int SPECIAL_FROM_THE_RIGHT = 5;
 const int FORWARD_THEN_BACKWARD = 11;
 const int REVERSE = 8;
-const int REVERSE_LEFT = 9;
-const int REVERSE_RIGHT = 10;
 const int STOP = 7;
 
 // Path array defining the robot's route
@@ -29,21 +27,19 @@ int progress = 0;
 int special_mode = -1;
 int special_progress = 0;
 int direction = 0;
-bool is_magnet = false; // Magnetic is recyclable
+int is_magnet = 0; // Magnetic is recyclable
 
 // Special paths for different modes
 int special_path[5][6] = {
-    {STRAIGHT_ON, RIGHT, FORWARD_THEN_BACKWARD, REVERSE_RIGHT, LEFT, STRAIGHT_ON},
-    {RIGHT, RIGHT, FORWARD_THEN_BACKWARD, REVERSE_LEFT, STOP, STOP}, // RLEFT goes forward after
-    {LEFT, FORWARD_THEN_BACKWARD, REVERSE_RIGHT, LEFT, STRAIGHT_ON, STOP},
-    {STRAIGHT_ON, LEFT, RIGHT, FORWARD_THEN_BACKWARD, REVERSE_LEFT, STOP},
+    {STRAIGHT_ON, RIGHT, FORWARD_THEN_BACKWARD, RIGHT, LEFT, STRAIGHT_ON},
+    {RIGHT, RIGHT, FORWARD_THEN_BACKWARD, LEFT, STOP, STOP}, // RLEFT goes forward after
+    {LEFT, FORWARD_THEN_BACKWARD, RIGHT, LEFT, STRAIGHT_ON, STOP},
+    {STRAIGHT_ON, LEFT, RIGHT, FORWARD_THEN_BACKWARD, LEFT, STOP},
     {LEFT, LEFT, FORWARD_THEN_BACKWARD, STOP, STOP, STOP},
 };
 
 // Junction function to handle the robot's movements at junctions
-void junction() {
-    int turn_direction = path[progress];
-    progress++;
+void turn_junction() {
     Serial.print("Junction turn_direction: ");
     Serial.println(turn_direction);
     switch (turn_direction) {
@@ -55,35 +51,17 @@ void junction() {
             // Code to turn right
             main_motors.turn_90_right();
             break;
-        case FULL_AROUND:
-            // Code to turn around
-            main_motors.turn_90_left();            
-            main_motors.turn_90_left();
-            break;
         case LEFT:
             // Code to turn left
             main_motors.turn_90_left();
             break;
-        case SPECIAL_FROM_THE_RIGHT:
-            // Code for special action to the right
-            if (is_magnet) {
-                special_mode = 3;
-            } else {
-                special_mode = 2;
-            }
-            break;
         case SPECIAL_FROM_THE_LEFT:
             // Code for special action to the left
-            if (is_magnet) {
-                special_mode = 1;
-            } else {
-                special_mode = 4;
-            }
-            special_junction();
+            special_mode = 0 + is_magnet;
             break;
-        case STOP:
-            // Stop action
-            main_motors.stop();
+        case SPECIAL_FROM_THE_RIGHT:
+            // Code for special action to the left
+            special_mode = 2 + is_magnet;
             break;
         default:
             // Default action for invalid direction
@@ -96,8 +74,6 @@ void junction() {
 void special_junction() {
     direction = special_path[special_mode][special_progress];
     special_progress++;
-    Serial.print("Special junction direction: ");
-    Serial.println(direction);
     switch (direction) {
         case STRAIGHT_ON:
             // Code to go straight
@@ -105,11 +81,6 @@ void special_junction() {
         case RIGHT:
             // Code to turn right
             main_motors.turn_90_right();
-            break;
-        case FULL_AROUND:
-            // Code to turn arounds
-            main_motors.turn_90_left();            
-            main_motors.turn_90_left();
             break;
         case LEFT:
             // Code to turn left
@@ -123,14 +94,6 @@ void special_junction() {
                 Serial.println("Reversing until front sensors detect line.");
                 delay(50);
             }
-            break;
-        case REVERSE_LEFT:
-            Serial.println("Special junction: Turning 90 degrees left backward.");
-            main_motors.turn_90_left_back();
-            break;
-        case REVERSE_RIGHT:
-            Serial.println("Special junction: Turning 90 degrees right backward.");
-            main_motors.turn_90_right_back();
             break;
         case STOP:
             Serial.println("Special junction: Stopping special mode.");
@@ -212,6 +175,19 @@ void system_decisions() {
         } else {
             special_junction();
         }
+    }
+}
+
+int path_switching()
+{
+    if(special_mode == -1)
+    {
+        int turn_direction = path[progress];
+        progress++;
+    }
+    else
+    {
+
     }
 }
 
