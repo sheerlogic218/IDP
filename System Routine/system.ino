@@ -28,7 +28,7 @@ int path[24] = {
 int progress = 0;
 int special_mode = -1;
 int special_progress = 0;
-int special_direction = 0;
+int direction = 0;
 bool is_magnet = false; // Magnetic is recyclable
 
 // Special paths for different modes
@@ -94,11 +94,11 @@ void junction() {
 
 // Function to handle special junction movements
 void special_junction() {
-    special_direction = special_path[special_mode][special_progress];
+    direction = special_path[special_mode][special_progress];
     special_progress++;
     Serial.print("Special junction direction: ");
-    Serial.println(special_direction);
-    switch (special_direction) {
+    Serial.println(direction);
+    switch (direction) {
         case STRAIGHT_ON:
             // Code to go straight
             break;
@@ -124,47 +124,13 @@ void special_junction() {
                 delay(50);
             }
             break;
-        case RLEFT:
+        case REVERSE_LEFT:
             Serial.println("Special junction: Turning 90 degrees left backward.");
             main_motors.turn_90_left_back();
             break;
-        case RRIGHT:
+        case REVERSE_RIGHT:
             Serial.println("Special junction: Turning 90 degrees right backward.");
             main_motors.turn_90_right_back();
-            break;
-        case FORWARD_THEN_BACKWARD:
-            Serial.println("Special junction: Moving forward then backward.");
-            main_motors.stop();
-            read_sensors();
-            Serial.print("Initial sensor states - ls_state: ");
-            Serial.print(ls_state);
-            Serial.print(", rs_state: ");
-            Serial.println(rs_state);
-            while (ls_state == 1 || rs_state == 1) {
-                Serial.println("Line tracking forward inside while loop.");
-                line_track_forward();
-                read_sensors();
-                Serial.print("Sensor states during forward tracking - ls_state: ");
-                Serial.print(ls_state);
-                Serial.print(", rs_state: ");
-                Serial.println(rs_state);
-            }
-            main_motors.turn_90_right_back(); // Used for debugging
-            Serial.println("Executed turn_90_right_back.");
-            main_motors.stop();
-            delay(1000);
-            read_sensors();
-            Serial.print("Sensor states after turn - fls_state: ");
-            Serial.print(fls_state);
-            Serial.print(", frs_state: ");
-            Serial.println(frs_state);
-            while (fls_state == 0 && frs_state == 0) {
-                Serial.println("Line tracking backward inside while loop.");
-                line_track_backward();
-                read_sensors();
-                Serial.print("Sensor states during backward tracking - fls_state: ");
-            }
-            Serial.println("Exited backward tracking loop.");
             break;
         case STOP:
             Serial.println("Special junction: Stopping special mode.");
@@ -248,3 +214,5 @@ void system_decisions() {
         }
     }
 }
+
+
