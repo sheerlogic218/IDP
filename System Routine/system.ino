@@ -135,24 +135,27 @@ void special_junction()
                 main_motors.turn_90_right_back();
                 break;
             case FORWARD_THEN_BACKWARD:
-                main_motors.go_backward();
+                main_motors.stop();
                 read_sensors();
                 while (ls_state == 1 || rs_state == 1)
                 {
                     line_track_forward();
                     read_sensors();
                 }
-
+                main_motors.turn_90_right_back(); //used for debugging
+                main_motors.stop();
+                delay(1000);
                 while (fls_state == 0 && frs_state == 0)
                 {
                     line_track_backward();
                     read_sensors();
                 }
-                main_motors.turn_90_left_back();
                 break;
-            default:
+            case STOP:
                 special_mode = -1;
                 special_progress = 0;
+                break;
+            default:
                 break;
         }
 }
@@ -193,19 +196,21 @@ void line_track_backward()
         Serial.println("on line");
     }
     else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-        main_motors.change_MR_speed(10);
+        main_motors.change_MR_speed(-10);
         main_motors.go_backward();
         Serial.println("right of line");
     }
     
     else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
-        main_motors.change_ML_speed(10);
+        main_motors.change_ML_speed(-10);
         main_motors.go_backward();
         Serial.println("left of line");
     }
     //something gone wrong
     else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
-        main_motors.stop();
+        main_motors.set_speed(130);
+        main_motors.go_backward();
+        Serial.println("on line");
         Serial.println("something wrong");
     }
 }
@@ -215,6 +220,7 @@ void loop(){
     //Serial.println(state);
     if (state) {
         system_decisions();
+                
     }
     else {
         Serial.println("we are not running");
@@ -224,8 +230,8 @@ void loop(){
 
 void system_decisions()
 {
-    Serial.println("we are running");
     line_track_forward();
+    Serial.println("we are running");
     //junction logic
     if(fls_state == 1 || frs_state == 1){
         Serial.println("at junction");
