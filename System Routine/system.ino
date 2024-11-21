@@ -16,10 +16,11 @@ const int TESTING = 10;
 const int FORWARD_MOVE = 1;
 const int FORWARD_UNTIL_END_THEN_START_REVERSE = 2;
 const int REVERSE_MOVE = 3;
+const int KEEP_GOING_UNTIL_END = 4;
 
 // Path array defining the robot's route
-int path[24] = {
-    TESTING, LEFT,                        // BLOCK
+int path[23] = {
+    LEFT,                        // BLOCK
     RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,   // END SPECIAL AT MIDDLE BLOCK
     RIGHT, RIGHT, RIGHT, SPECIAL_FROM_THE_LEFT,         // END SPECIAL AT MIDDLE BLOCK
     LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,           // END SPECIAL AT MIDDLE BLOCK
@@ -109,10 +110,10 @@ void loop() {
 void system_decisions() {
     do_a_move();
     Serial.println("Executing system decisions.");
-    // Junction logic
+    //Junction logic
     if (fls_state == 1 || frs_state == 1) {
-        Serial.println("At junction.");
-        turn_junction(get_turn_direction());
+       Serial.println("At junction.");
+       turn_junction(get_turn_direction());
     }
 }
 
@@ -120,7 +121,7 @@ int get_turn_direction()
 {
     if(special_mode == -1)
     {
-        int turn_direction = path[progress];
+        direction = path[progress];
         progress++;
     }
     else
@@ -133,31 +134,43 @@ int get_turn_direction()
             special_progress = 0;
         }
     }
+    return direction;
 }
 
 void do_a_move()
 {
     if(move_mode == FORWARD_MOVE)
     {
+        Serial.println("Move mode: FORWARD_MOVE");
         line_track_forward();
     }
     if(move_mode == FORWARD_UNTIL_END_THEN_START_REVERSE)
     {
+        Serial.println("Move mode: FORWARD_UNTIL_END_THEN_START_REVERSE");
         line_track_forward();
-        if(ls_state == 0 && rs_state == 0)
+        if(ls_state == 1 && rs_state == 1)
         {
-            move_mode == REVERSE_MOVE;
+            move_mode = KEEP_GOING_UNTIL_END;
         }
     }
     if(move_mode == REVERSE_MOVE)
     {
-        line_track_backward();
+        Serial.println("Move mode: REVERSE_MOVE");
+        reverse_backward();
         if(fls_state == 1 || frs_state == 1)
         {
             move_mode = FORWARD_MOVE;
         }
     }
-
+    if(move_mode == KEEP_GOING_UNTIL_END)
+    {
+        Serial.println("Move mode: KEEP_GOING_UNTIL_END");
+        line_track_forward();
+        if(ls_state == 0 && rs_state == 0)
+        {
+            move_mode = REVERSE_MOVE;
+        }
+    }
 }
 
 
@@ -185,26 +198,35 @@ void line_track_forward() {
     }
 }
 
+void reverse_backward()
+{
+  main_motors.set_speed(200);
+  main_motors.go_backward();
+}
+
 // Function for line tracking backward
 void line_track_backward() {
     read_sensors();
     // Test code for 4 sensor following
     if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-        main_motors.set_speed(230);
+        main_motors.set_speed(200);
         main_motors.go_backward();
         Serial.println("Line tracking backward: On line.");
     } else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-        main_motors.change_MR_speed(-10);
-        main_motors.go_backward();
-        Serial.println("Line tracking backward: Right of line.");
-    } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+        main_motors.move_forward(20);
         main_motors.change_ML_speed(-10);
         main_motors.go_backward();
+        delay(100);
+        Serial.println("Line tracking backward: Right of line.");
+    } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+        main_motors.move_forward(20);
+        main_motors.change_MR_speed(-10);
+        main_motors.go_backward();
+        delay(100);
         Serial.println("Line tracking backward: Left of line.");
     } else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
         // Something went wrong
-        main_motors.set_speed(130);
-        main_motors.go_backward();
+        //main_motors.move_forward(20);
         Serial.println("Line tracking backward: Lost line, adjusting speed.");
     }
 }
