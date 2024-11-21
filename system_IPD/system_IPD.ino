@@ -27,9 +27,10 @@ const int REVERSE_MOVE = 3;
 //     LEFT,                                               // There's a hidden block on this road
 //     STOP                                                // Use comments to explain each part of the route.
 // };
-int path[] = {
-  STRAIGHT_ON,LEFT,RIGHT,STRAIGHT_ON,RIGHT,RIGHT,RIGHT_DIP
+int path[1] = {
+  LEFT
 };
+int path_length = sizeof(path)/sizeof(path[0]);
 
 
 int progress = 0;
@@ -48,12 +49,15 @@ int special_path[5][6] = {
     {LEFT, LEFT_DIP, STOP, STOP, STOP},
 };
 
+
 int get_turn_direction() {
-    if (special_mode == -1) {
+    Serial.println("AAAAAAAAAAAA");
+    Serial.println(path_length);
+    if (special_mode == -1  &&  progress <= path_length ) {
         int turn_direction = path[progress];
         leds.blue_on();
         progress++;
-    } else {
+    } else{
         direction = special_path[special_mode][special_progress];
         leds.red_on();
         special_progress++;
