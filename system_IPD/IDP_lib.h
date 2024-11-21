@@ -378,7 +378,7 @@ void turn_right_until_line(){
   main_motors.stop();
 }
 
-int read_magnet_sensor(){
+String read_magnet_sensor(){
   valueL = analogRead(hallPinLeft) - offsetL;
   valueR = analogRead(hallPinRight) - offsetR;
   Serial.print("Left Value: ");
