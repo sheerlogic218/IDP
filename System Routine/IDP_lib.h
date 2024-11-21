@@ -317,6 +317,46 @@ void read_sensors(){
 
 
 
+int get_line_state(){
+    read_sensors();
+    if (fls_state == 0 && frs_state == 0){
+      if(ls_state == 1 && rs_state == 1){
+          return 1; //1 = forward
+      } else if (ls_state == 1 && rs_state == 0){
+          return 2; //2 = right of line
+      } else if (ls_state == 0 && rs_state == 1){
+          return 3; //3 = left of line
+      } else{
+          return 4;//4 = center is off line, correct please
+      }
+    } else{
+        return 5;//at junction
+    }
+}
+
+void turn_left_until_line(){
+  main_motors.turn_left(100);
+  while (get_line_state() != 5){
+    delay(50);
+  }
+  main_motors.turn_left(50);
+  while (get_line_state() != 1){
+    delay(50);
+  }
+  main_motors.stop();
+}
+void turn_right_until_line(){
+  main_motors.turn_right(100);
+  while (get_line_state() != 5){
+    delay(50);
+  }
+  main_motors.turn_right(50);
+  while (get_line_state() != 1){
+    delay(50);
+  }
+  main_motors.stop();
+}
+
 void interrupt_function(){
     volatile static unsigned long last_interrupt = 0;
     unsigned long t = millis();
