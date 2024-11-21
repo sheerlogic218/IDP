@@ -408,4 +408,58 @@ void setup() {
 
 
 
+// Function for line tracking forward
+void line_track_forward() {
+    read_sensors();
+    // Test code for 4 sensor following
+    if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+        main_motors.set_speed(230);
+        main_motors.go_forward();
+        Serial.println("Line tracking forward: On line.");
+    } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+        main_motors.change_MR_speed(10);
+        main_motors.go_forward();
+        Serial.println("Line tracking forward: Right of line.");
+    } else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+        main_motors.change_ML_speed(10);
+        main_motors.go_forward();
+        Serial.println("Line tracking forward: Left of line.");
+    } else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+        // Something went wrong
+        main_motors.stop();
+        Serial.println("Line tracking forward: Lost line, stopping.");
+    }
+}
 
+void reverse_backward()
+{
+  main_motors.set_speed(200);
+  main_motors.go_backward();
+}
+
+// Function for line tracking backward
+void line_track_backward() {
+    read_sensors();
+    // Test code for 4 sensor following
+    if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+        main_motors.set_speed(200);
+        main_motors.go_backward();
+        Serial.println("Line tracking backward: On line.");
+    } else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+        main_motors.move_forward(20);
+        main_motors.change_ML_speed(-10);
+        main_motors.go_backward();
+        delay(100);
+        Serial.println("Line tracking backward: Right of line.");
+    } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+        main_motors.move_forward(20);
+        main_motors.change_MR_speed(-10);
+        main_motors.go_backward();
+        delay(100);
+        Serial.println("Line tracking backward: Left of line.");
+    } else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+        // Something went wrong
+        //main_motors.move_forward(20);
+        Serial.println("Line tracking backward: Lost line, adjusting speed.");
+    }
+}
