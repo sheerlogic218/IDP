@@ -10,6 +10,7 @@ const int SPECIAL_FROM_THE_RIGHT = 5;
 const int STOP = 7;
 const int RIGHT_DIP = 8;
 const int LEFT_DIP = 9;
+const int TESTING = 10;
 
 // constants for move directions
 const int FORWARD_MOVE = 1;
@@ -33,7 +34,7 @@ int special_mode = -1;
 int special_progress = 0;
 int direction = 0;
 int is_magnet = 0; // Magnetic is recyclable
-int move_mode = 1;
+int move_mode = FORWARD_MOVE;
 
 // Special paths for different modes
 int special_path[5][6] = {
@@ -79,6 +80,10 @@ void turn_junction(int turn_direction) {
         case SPECIAL_FROM_THE_RIGHT:
             // Code for special action to the left
             special_mode = 2 + is_magnet;
+            turn_junction(get_turn_direction());
+            break;
+        case TESTING:
+            special_mode = 4;
             turn_junction(get_turn_direction());
             break;
         default:
@@ -138,7 +143,7 @@ void do_a_move()
     }
     if(move_mode == FORWARD_UNTIL_END_THEN_START_REVERSE)
     {
-        line_track_backward();
+        line_track_forward();
         if(ls_state == 0 && rs_state == 0)
         {
             move_mode == REVERSE_MOVE;
