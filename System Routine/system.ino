@@ -19,7 +19,7 @@ const int REVERSE_MOVE = 3;
 
 // Path array defining the robot's route
 int path[24] = {
-    SPECIAL_FROM_THE_LEFT, LEFT,                        // BLOCK
+    TESTING, LEFT,                        // BLOCK
     RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,   // END SPECIAL AT MIDDLE BLOCK
     RIGHT, RIGHT, RIGHT, SPECIAL_FROM_THE_LEFT,         // END SPECIAL AT MIDDLE BLOCK
     LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,           // END SPECIAL AT MIDDLE BLOCK
