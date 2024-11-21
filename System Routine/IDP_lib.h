@@ -329,8 +329,12 @@ int get_line_state(){
       } else{
           return 4;//4 = center is off line, correct please
       }
+    } else if (fls_state == 1  && frs_state == 0){
+        return 5;//at left junction
+    } else if (fls_state == 0 && frs_state == 1){
+        return 6;//at right junction
     } else{
-        return 5;//at junction
+        return 7; //at T junction
     }
 }
 
@@ -346,10 +350,11 @@ void turn_left_until_line(){
   }
   main_motors.stop();
 }
+
 void turn_right_until_line(){
   main_motors.move_forward(80);
   main_motors.turn_right(100);
-  while (get_line_state() != 5){
+  while (get_line_state() != 6){
     delay(50);
   }
   main_motors.turn_right(50);
