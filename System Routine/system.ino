@@ -13,6 +13,7 @@ const int LEFT_DIP = 9;
 const int TESTING = 10;
 
 // constants for move directions
+const int NO_MOVE = 0;
 const int FORWARD_MOVE = 1;
 const int FORWARD_UNTIL_END_THEN_START_REVERSE = 2;
 const int REVERSE_MOVE = 3;
@@ -36,6 +37,7 @@ int special_progress = 0;
 int direction = 0;
 int is_magnet = 0; // Magnetic is recyclable
 int move_mode = FORWARD_MOVE;
+long last_turn_time = 0;
 
 // Special paths for different modes
 int special_path[5][6] = {
@@ -57,7 +59,7 @@ void turn_junction(int turn_direction) {
             break;
         case RIGHT:
             // Code to turn right
-            turn_right_until_line():
+            turn_right_until_line();
             break;
         case LEFT:
             // Code to turn left
@@ -119,17 +121,41 @@ void system_decisions() {
 
 int get_turn_direction()
 {
+    Serial.println("Getting turn direction...");
+    move_mode = FORWARD_MOVE;
+    if(last_turn_time + 1000 > millis())
+    {
+        Serial.println("Failsafe triggered: Cancelling last turn.");
+        progress--;
+    }
+    if(progress > sizeof(path))
+    {
+        Serial.println("End of path reached. Stopping.");
+        move_mode = 0;
+        return STOP;
+    }
     if(special_mode == -1)
     {
         direction = path[progress];
+        Serial.print("Normal mode. Progress: ");
+        Serial.print(progress);
+        Serial.print(", Direction: ");
+        Serial.println(direction);
         progress++;
+        last_turn_time = millis();
     }
     else
     {
         direction = special_path[special_mode][special_progress];
+        Serial.print("Special mode. Special progress: ");
+        Serial.print(special_progress);
+        Serial.print(", Direction: ");
+        Serial.println(direction);
         special_progress++;
+        last_turn_time = millis();
         if(direction == STOP)
         {
+            Serial.println("End of special path. Resetting special mode.");
             special_mode = -1;
             special_progress = 0;
         }
@@ -139,6 +165,10 @@ int get_turn_direction()
 
 void do_a_move()
 {
+    if(move_mode == NO_MOVE)
+    {
+        Serial.println("Move mode: NO_MOVE");
+    }
     if(move_mode == FORWARD_MOVE)
     {
         Serial.println("Move mode: FORWARD_MOVE");
@@ -147,11 +177,8 @@ void do_a_move()
     if(move_mode == FORWARD_UNTIL_END_THEN_START_REVERSE)
     {
         Serial.println("Move mode: FORWARD_UNTIL_END_THEN_START_REVERSE");
-        line_track_forward();
-        if(ls_state == 1 && rs_state == 1)
-        {
-            move_mode = KEEP_GOING_UNTIL_END;
-        }
+        main_motors.move_forward(50);
+        main_motors.move_backward(50);
     }
     if(move_mode == REVERSE_MOVE)
     {
@@ -160,15 +187,6 @@ void do_a_move()
         if(fls_state == 1 || frs_state == 1)
         {
             move_mode = FORWARD_MOVE;
-        }
-    }
-    if(move_mode == KEEP_GOING_UNTIL_END)
-    {
-        Serial.println("Move mode: KEEP_GOING_UNTIL_END");
-        line_track_forward();
-        if(ls_state == 0 && rs_state == 0)
-        {
-            move_mode = REVERSE_MOVE;
         }
     }
 }
