@@ -113,7 +113,7 @@ void system_decisions() {
     do_a_move();
     Serial.println("Executing system decisions.");
     //Junction logic
-    if (fls_state == 1 || frs_state == 1) {
+    if (get_line_state() >= 5) {        //If it misinterprets things as junctions look here.
        Serial.println("At junction.");
        turn_junction(get_turn_direction());
     }
