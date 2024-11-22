@@ -188,7 +188,7 @@ void do_a_move()
     {
         Serial.println("Move mode: FORWARD_UNTIL_END_THEN_START_REVERSE");
         main_motors.move_forward(50);
-        main_motors.move_backward(50);
+        main_motors.move_backward(45);  //My gut tells me the code wont work properly here, consider adding print lines
         move_mode = REVERSE_MOVE;
     }
     if(move_mode == REVERSE_MOVE)
