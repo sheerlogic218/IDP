@@ -133,12 +133,14 @@ int get_turn_direction()
     Serial.print("Last turn time: ");
     Serial.println(last_turn_time);
     move_mode = FORWARD_MOVE;
+    //not a huge fan of this, this function just shouldnt even be able to be called if the last turn was too recent.
+    //but if it works it works.
     if(last_turn_time + min_time_between_junctions > millis())        //NEW feature to prevent multi junction attitude
     {
         Serial.println("Failsafe triggered: Cancelling last turn.");
         progress--;
     }
-    if(progress > sizeof(path))
+    if(progress > sizeof(path)) //sizeof(path) is the byte size not index size, if this works its a fluke
     {
         Serial.println("End of path reached. Stopping.");
         move_mode = 0;
@@ -187,6 +189,7 @@ void do_a_move()
     if(move_mode == FORWARD_UNTIL_END_THEN_START_REVERSE)
     {
         Serial.println("Move mode: FORWARD_UNTIL_END_THEN_START_REVERSE");
+        //looks like its gonna do a lil boogie woogie
         main_motors.move_forward(50);
         main_motors.move_backward(45);  //My gut tells me the code wont work properly here, consider adding print lines
         move_mode = REVERSE_MOVE;
