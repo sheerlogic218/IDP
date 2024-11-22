@@ -31,17 +31,6 @@ int path[23] = {
     STOP                                                // Use comments to explain each part of the route.
 };
 
-int progress = 0;
-int special_mode = -1;
-int special_progress = 0;
-int direction = 0;
-int is_magnet = 0; // Magnetic is recyclable
-int move_mode = FORWARD_MOVE;
-long last_turn_time = 0;
-
-//CLAW Variables
-int claw_range = 100;
-
 // Special paths for different modes
 int special_path[5][6] = {
     {STRAIGHT_ON, RIGHT_DIP, RIGHT, LEFT, STRAIGHT_ON},
@@ -50,6 +39,19 @@ int special_path[5][6] = {
     {STRAIGHT_ON, LEFT, RIGHT_DIP, LEFT, STOP},
     {LEFT, LEFT_DIP, STOP, STOP, STOP},
 };
+
+//Navigation variables
+int progress = 0;
+int special_mode = -1;
+int special_progress = 0;
+int direction = 0;
+int move_mode = FORWARD_MOVE;   //start life by moving forward
+long last_turn_time = 0;
+long min_time_between_junctions = 2000;
+
+//CLAW Variables
+int claw_range = 100;
+int is_magnet = 0; // Magnetic is recyclable
 
 // Junction function to handle the robot's movements at junctions
 void turn_junction(int turn_direction) {
@@ -99,8 +101,6 @@ void turn_junction(int turn_direction) {
     }
 }
 
-
-
 void loop() {
     if (state) {
         Serial.println("System is running.");
@@ -118,7 +118,7 @@ void system_decisions() {
     //Block logic
     if (get_block_distance() < claw_range)
     {
-
+        //GRAB THE BLOCKKKK
     }
     //Junction logic
     if (get_line_state() >= 5) {        //If it misinterprets things as junctions look here.
@@ -133,7 +133,7 @@ int get_turn_direction()
     Serial.print("Last turn time: ");
     Serial.println(last_turn_time);
     move_mode = FORWARD_MOVE;
-    if(last_turn_time + 1000 > millis())
+    if(last_turn_time + min_time_between_junctions > millis())        //NEW feature to prevent multi junction attitude
     {
         Serial.println("Failsafe triggered: Cancelling last turn.");
         progress--;
