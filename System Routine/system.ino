@@ -39,6 +39,9 @@ int is_magnet = 0; // Magnetic is recyclable
 int move_mode = FORWARD_MOVE;
 long last_turn_time = 0;
 
+//CLAW Variables
+int claw_range = 100;
+
 // Special paths for different modes
 int special_path[5][6] = {
     {STRAIGHT_ON, RIGHT_DIP, RIGHT, LEFT, STRAIGHT_ON},
@@ -59,20 +62,20 @@ void turn_junction(int turn_direction) {
             break;
         case RIGHT:
             // Code to turn right
-            turn_right_until_line();
+            main_motors.turn_90_right();
             break;
         case LEFT:
             // Code to turn left
-            turn_left_until_line();
+            main_motors.turn_90_left();
             break;
         case RIGHT_DIP:
             // Code to turn right
-            turn_right_until_line();
+            main_motors.turn_90_right();
             move_mode = FORWARD_UNTIL_END_THEN_START_REVERSE;
             break;
         case LEFT_DIP:
             // Code to turn left
-            turn_left_until_line();
+            main_motors.turn_90_left();
             move_mode = FORWARD_UNTIL_END_THEN_START_REVERSE;
             break;
         case SPECIAL_FROM_THE_LEFT:
@@ -112,6 +115,11 @@ void loop() {
 void system_decisions() {
     do_a_move();
     Serial.println("Executing system decisions.");
+    //Block logic
+    if (get_block_distance() < claw_range)
+    {
+
+    }
     //Junction logic
     if (get_line_state() >= 5) {        //If it misinterprets things as junctions look here.
        Serial.println("At junction.");
@@ -122,6 +130,8 @@ void system_decisions() {
 int get_turn_direction()
 {
     Serial.println("Getting turn direction...");
+    Serial.print("Last turn time: ");
+    Serial.println(last_turn_time);
     move_mode = FORWARD_MOVE;
     if(last_turn_time + 1000 > millis())
     {
@@ -179,15 +189,12 @@ void do_a_move()
         Serial.println("Move mode: FORWARD_UNTIL_END_THEN_START_REVERSE");
         main_motors.move_forward(50);
         main_motors.move_backward(50);
+        move_mode = REVERSE_MOVE;
     }
     if(move_mode == REVERSE_MOVE)
     {
         Serial.println("Move mode: REVERSE_MOVE");
         reverse_backward();
-        if(fls_state == 1 || frs_state == 1)
-        {
-            move_mode = FORWARD_MOVE;
-        }
     }
 }
 
