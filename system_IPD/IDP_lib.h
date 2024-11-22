@@ -47,10 +47,11 @@ class MainMotors {
         //test values
         float wheel_radius = 32.5; //mm
         int wheel_base = 170; //mm
-        float max_wheel_angular_speed = 1.95*Pi;//(5*360)/(5*2*Pi); //max angular speed of wheel, radians per second
+        float max_wheel_angular_speed = 1.78*Pi;//(5*360)/(5*2*Pi); //max angular speed of wheel, radians per second
         //double wheel_angular_speed_100 = 0;
         float max_wheel_speed = max_wheel_angular_speed*wheel_radius; //max linear speed of wheel mm/s
         int sensor_wheel_dist = 110;//mm
+        int sensor_forward_offset = sensor_wheel_dist - wheel_base/2;
         
 
     //simple interface for using built in functions -- verified
@@ -473,7 +474,12 @@ void setup() {
     delay(500);
     leds.blue_blink();
     leds.red_blink();
-
+    // main_motors.set_speed(255);
+    // main_motors.go_forward();
+    // delay(5000);
+    // main_motors.stop();
+    // main_motors.turn_90_left();
+    // while(1);
     // Claws.open();
     // Serial.println(read_magnet_sensor());
     // main_motors.move_forward(120);

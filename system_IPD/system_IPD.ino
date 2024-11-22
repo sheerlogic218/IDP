@@ -27,10 +27,10 @@ const int REVERSE_MOVE = 3;
 //     LEFT,                                               // There's a hidden block on this road
 //     STOP                                                // Use comments to explain each part of the route.
 // };
-int path[1] = {
-  LEFT
+int path[] = {
+  LEFT,RIGHT,STRAIGHT_ON,RIGHT,RIGHT,RIGHT_DIP
 };
-int path_length = sizeof(path)/sizeof(path[0]);
+int path_length = 6;//sizeof(path)/sizeof(path[0]);
 
 
 int progress = 0;
@@ -39,6 +39,7 @@ int special_progress = 0;
 int direction = 0;
 int is_magnet = 0; // Magnetic is recyclable
 int move_mode = 1;
+int turn_direction;
 
 // Special paths for different modes
 int special_path[5][6] = {
@@ -48,47 +49,49 @@ int special_path[5][6] = {
     {STRAIGHT_ON, LEFT, RIGHT_DIP, LEFT, STOP},
     {LEFT, LEFT_DIP, STOP, STOP, STOP},
 };
+int special_path_lengths = 5;
 
 
 int get_turn_direction() {
-    Serial.println("AAAAAAAAAAAA");
-    Serial.println(path_length);
-    if (special_mode == -1  &&  progress <= path_length ) {
-        int turn_direction = path[progress];
+    if (special_mode == -1  &&  progress <= (path_length-1) ) {
+        turn_direction = path[progress];
+        leds.red_off();
         leds.blue_on();
         progress++;
-    } else{
+    } else if (special_progress <= special_path_lengths){
         direction = special_path[special_mode][special_progress];
+        leds.blue_off();
         leds.red_on();
         special_progress++;
         if (direction == STOP) {
             special_mode = -1;
             special_progress = 0;
         }
+    } else {
+      main_motors.stop();
+      leds.blue_blink();
+      leds.red_blink();
     }
 }
 
 
 // Junction function to handle the robot's movements at junctions
-void turn_junction(int turn_direction) {
+void turn_junction() {
     Serial.print("Junction turn_direction: ");
     Serial.println(turn_direction);
     switch (turn_direction) {
         case STRAIGHT_ON:
             // Code to go straight
-            leds.blue_blink();
             main_motors.move_forward(30);
             break;
         case RIGHT:
-            leds.red_blink();
             // Code to turn right
             main_motors.turn_90_right();
             break;
         case LEFT:
-            leds.blue_blink();
-            leds.red_blink();
             // Code to turn left
             main_motors.turn_90_left();
+            leds.blue_blink();
             break;
         case RIGHT_DIP:
             leds.red_blink();
@@ -107,12 +110,14 @@ void turn_junction(int turn_direction) {
         case SPECIAL_FROM_THE_LEFT:
             // Code for special action to the left
             special_mode = 0 + is_magnet;
-            turn_junction(get_turn_direction());
+            get_turn_direction();
+            turn_junction();
             break;
         case SPECIAL_FROM_THE_RIGHT:
             // Code for special action to the left
             special_mode = 2 + is_magnet;
-            turn_junction(get_turn_direction());
+            get_turn_direction();
+            turn_junction();
             break;
         default:
             // Default action for invalid direction
@@ -194,7 +199,8 @@ void system_decisions() {
     // Junction logic
     if (fls_state == 1 || frs_state == 1) {
         Serial.println("At junction.");
-        turn_junction(get_turn_direction());
+        get_turn_direction();
+        turn_junction();
     }
 }
 
