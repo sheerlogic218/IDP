@@ -20,7 +20,7 @@ const int REVERSE_MOVE = 3;
 const int KEEP_GOING_UNTIL_END = 4;
 
 // Path array defining the robot's route
-int path[23] = {
+int path[] = {
     LEFT,                        // BLOCK
     RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,   // END SPECIAL AT MIDDLE BLOCK
     RIGHT, RIGHT, RIGHT, SPECIAL_FROM_THE_LEFT,         // END SPECIAL AT MIDDLE BLOCK
@@ -32,7 +32,7 @@ int path[23] = {
 };
 
 // Special paths for different modes
-int special_path[5][6] = {
+int special_path[][] = {
     {STRAIGHT_ON, RIGHT_DIP, RIGHT, LEFT, STRAIGHT_ON},
     {RIGHT, RIGHT_DIP, LEFT, STOP, STOP}, // RLEFT goes forward after
     {LEFT_DIP, RIGHT, LEFT, STRAIGHT_ON, STOP},
@@ -44,7 +44,6 @@ int special_path[5][6] = {
 int progress = 0;
 int special_mode = -1;
 int special_progress = 0;
-int direction = 0;
 int move_mode = FORWARD_MOVE;   //start life by moving forward
 long last_turn_time = 0;
 long min_time_between_junctions = 2000;
@@ -129,6 +128,7 @@ void system_decisions() {
 
 int get_turn_direction()
 {
+    int direction;
     Serial.println("Getting turn direction...");
     Serial.print("Last turn time: ");
     Serial.println(last_turn_time);
