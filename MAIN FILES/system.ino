@@ -15,7 +15,7 @@ const int TESTING = 10;
 // constants for move directions
 const int NO_MOVE = 0;
 const int FORWARD_MOVE = 1;
-const int DIP = 2;
+const int FORWARD_UNTIL_END_THEN_START_REVERSE = 2;
 const int REVERSE_MOVE = 3;
 const int KEEP_GOING_UNTIL_END = 4;
 
@@ -33,7 +33,7 @@ int path[] = {
 
 // Special paths for different modes
 int special_path[][5] = {
-    {STRAIGHT_ON, RIGHT_DIP, RIGHT, LEFT, STRAIGHT_ON}, //
+    {STRAIGHT_ON, RIGHT_DIP, RIGHT, LEFT, STRAIGHT_ON},
     {RIGHT, RIGHT_DIP, LEFT, STOP, STOP}, // RLEFT goes forward after
     {LEFT_DIP, RIGHT, LEFT, STRAIGHT_ON, STOP},
     {STRAIGHT_ON, LEFT, RIGHT_DIP, LEFT, STOP},
@@ -46,10 +46,10 @@ int special_mode = -1;
 int special_progress = 0;
 int move_mode = FORWARD_MOVE;   //start life by moving forward
 long last_turn_time = 0;
-long min_time_between_junctions = 2000; //SHOULDNT NEED TO EXIST, its a failsafe
+long min_time_between_junctions = 2000;
 
 //CLAW Variables
-int claw_range = 100;   //Not used yet
+int claw_range = 100;
 int is_magnet = 0; // Magnetic is recyclable
 
 // Junction function to handle the robot's movements at junctions
@@ -72,12 +72,12 @@ void turn_junction(int turn_direction) {
         case RIGHT_DIP:
             // Code to turn right
             main_motors.turn_90_right();
-            move_mode = DIP;
+            move_mode = FORWARD_UNTIL_END_THEN_START_REVERSE;
             break;
         case LEFT_DIP:
             // Code to turn left
             main_motors.turn_90_left();
-            move_mode = DIP;
+            move_mode = FORWARD_UNTIL_END_THEN_START_REVERSE;
             break;
         case SPECIAL_FROM_THE_LEFT:
             // Code for special action to the left
@@ -140,7 +140,7 @@ int get_turn_direction()
         Serial.println("Failsafe triggered: Cancelling last turn.");
         progress--;
     }
-    if(progress > (sizeof(path)/sizeof(path[0]))) //sizeof(path) is the byte size not index size, if this works its a fluke
+    if(progress > sizeof(path)) //sizeof(path) is the byte size not index size, if this works its a fluke
     {
         Serial.println("End of path reached. Stopping.");
         move_mode = 0;
@@ -149,12 +149,20 @@ int get_turn_direction()
     if(special_mode == -1)
     {
         direction = path[progress];
+        Serial.print("Normal mode. Progress: ");
+        Serial.print(progress);
+        Serial.print(", Direction: ");
+        Serial.println(direction);
         progress++;
         last_turn_time = millis();
     }
     else
     {
         direction = special_path[special_mode][special_progress];
+        Serial.print("Special mode. Special progress: ");
+        Serial.print(special_progress);
+        Serial.print(", Direction: ");
+        Serial.println(direction);
         special_progress++;
         last_turn_time = millis();
         if(direction == STOP)
@@ -178,10 +186,10 @@ void do_a_move()
         Serial.println("Move mode: FORWARD_MOVE");
         line_track_forward();
     }
-    if(move_mode == DIP)
+    if(move_mode == FORWARD_UNTIL_END_THEN_START_REVERSE)
     {
-        Serial.println("Move mode: DIP");
-        //looks like its gonna do a forward then backward
+        Serial.println("Move mode: FORWARD_UNTIL_END_THEN_START_REVERSE");
+        //looks like its gonna do a lil boogie woogie
         main_motors.move_forward(50);
         main_motors.move_backward(45);  //My gut tells me the code wont work properly here, consider adding print lines
         move_mode = REVERSE_MOVE;
