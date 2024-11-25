@@ -63,20 +63,20 @@ void turn_junction(int turn_direction) {
             break;
         case RIGHT:
             // Code to turn right
-            main_motors.turn_90_right();
+            turn_right_until_line();
             break;
         case LEFT:
             // Code to turn left
-            main_motors.turn_90_left();
+            turn_left_until_line();
             break;
         case RIGHT_DIP:
             // Code to turn right
-            main_motors.turn_90_right();
+            turn_right_until_line();
             move_mode = DIP;
             break;
         case LEFT_DIP:
             // Code to turn left
-            main_motors.turn_90_left();
+            turn_left_until_line();
             move_mode = DIP;
             break;
         case SPECIAL_FROM_THE_LEFT:

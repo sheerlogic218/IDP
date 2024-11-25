@@ -9,6 +9,10 @@ Adafruit_DCMotor *main_motor_right = AFMS.getMotor(2); //motor pin 2
 Servo left_servo;
 Servo right_servo;
 
+//setup for leds
+int led1pin = 11;
+int led2pin = 8;
+
 volatile byte state = LOW;
 
 //create class to control main motors
@@ -289,6 +293,35 @@ class Servo_claws {
 };
 Servo_claws Claws;
 
+class LED_indicator{
+  public:
+  void blue_on(){
+    digitalWrite(led1pin, HIGH);
+  }
+  void blue_off(){
+    digitalWrite(led1pin, LOW);
+  }
+  void blue_blink(){
+    blue_on();
+    delay(50);
+    blue_off();
+  }
+
+  void red_on(){
+    digitalWrite(led2pin, HIGH);
+  }
+  void red_off(){
+    digitalWrite(led2pin, LOW);
+  }
+  void red_blink(){
+    red_on();
+    delay(50);
+    red_off();
+  }
+  
+};
+LED_indicator leds;
+
 //set to safe pins
 int far_left_sensor = 4;
 int left_sensor = 5; 
@@ -350,8 +383,8 @@ void turn_left_until_line(){
   // }
   // main_motors.stop();
 
-  main_motors.move_forward(30);
-  main_motors.set_MR_speed(150);
+  main_motors.move_forward(15);
+  main_motors.set_MR_speed(230);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
   while (get_line_state() != 1);
@@ -369,8 +402,8 @@ void turn_right_until_line(){
   // delay(50);
   // }
   // main_motors.stop();
-  main_motors.move_forward(30);
-  main_motors.set_ML_speed(150);
+  main_motors.move_forward(15);
+  main_motors.set_ML_speed(230);
   main_motors.set_MR_speed(0);
   main_motors.go_forward();
   while (get_line_state() != 1);
@@ -416,6 +449,15 @@ void setup() {
   pinMode(far_left_sensor,INPUT);
   pinMode(far_right_sensor, INPUT);
 
+  //LED
+  pinMode(led1pin, OUTPUT);
+  pinMode(led2pin, OUTPUT);
+  leds.blue_on();
+  delay(500);
+  leds.blue_off();
+  delay(500);
+  leds.blue_blink();
+  leds.red_blink();
 
 }
 
