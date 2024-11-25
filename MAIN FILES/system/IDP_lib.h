@@ -500,4 +500,8 @@ void line_track_forward() {
     main_motors.stop();
     Serial.println("Line tracking forward: Lost line, stopping.");
   }
+
+  if (tof_block_distance <= 80){ 
+    Claws.open();
+  }
 }
