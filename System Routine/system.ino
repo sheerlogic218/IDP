@@ -32,7 +32,7 @@ int path[] = {
 };
 
 // Special paths for different modes
-int special_path[][] = {
+int special_path[][5] = {
     {STRAIGHT_ON, RIGHT_DIP, RIGHT, LEFT, STRAIGHT_ON},
     {RIGHT, RIGHT_DIP, LEFT, STOP, STOP}, // RLEFT goes forward after
     {LEFT_DIP, RIGHT, LEFT, STRAIGHT_ON, STOP},
@@ -115,10 +115,10 @@ void system_decisions() {
     do_a_move();
     Serial.println("Executing system decisions.");
     //Block logic
-    if (get_block_distance() < claw_range)
-    {
-        //GRAB THE BLOCKKKK
-    }
+    // if (get_block_distance() < claw_range)
+    // {
+    //     //GRAB THE BLOCKKKK
+    // }
     //Junction logic
     if (get_line_state() >= 5) {        //If it misinterprets things as junctions look here.
        Serial.println("At junction.");
