@@ -1,6 +1,10 @@
 #include <Adafruit_MotorShield.h>
 #include <Arduino_LSM6DS3.h>
 #include <Servo.h>
+#include "Wire.h"
+#include "DFRobot_VL53L0X.h"
+
+DFRobot_VL53L0X sensor;
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *main_motor_left  = AFMS.getMotor(1); //motor pin 1
@@ -334,6 +338,8 @@ int ls_state = 0;
 int rs_state = 0;
 int frs_state = 0;
 
+int tof_block_distance;
+
 
 int soft_turn_rate = 10;
 
@@ -344,6 +350,7 @@ void read_sensors(){
   ls_state = digitalRead(left_sensor);
   rs_state = digitalRead(right_sensor);
   frs_state = digitalRead(far_right_sensor);
+  tof_block_distance = sensor.getDistance()-20;
 }
 
 
@@ -448,6 +455,14 @@ void setup() {
   pinMode(right_sensor, INPUT);
   pinMode(far_left_sensor,INPUT);
   pinMode(far_right_sensor, INPUT);
+  //tof sensor 
+  Wire.begin();
+  //Set I2C sub-device address
+  sensor.begin(0x50);
+  //Set to Back-to-back mode and high precision mode
+  sensor.setMode(sensor.eContinuous,sensor.eHigh);
+  //Laser rangefinder begins to work
+  sensor.start();
 
   //LED
   pinMode(led1pin, OUTPUT);
@@ -484,38 +499,5 @@ void line_track_forward() {
     main_motors.move_backward(10);
     main_motors.stop();
     Serial.println("Line tracking forward: Lost line, stopping.");
-  }
-}
-
-void reverse_backward()
-{
-  main_motors.set_speed(200);
-  main_motors.go_backward();
-}
-
-// Function for line tracking backward
-void line_track_backward() {
-  read_sensors();
-  // Test code for 4 sensor following
-  if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-    main_motors.set_speed(200);
-    main_motors.go_backward();
-    Serial.println("Line tracking backward: On line.");
-  } else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-    main_motors.move_forward(20);
-    main_motors.change_ML_speed(-10);
-    main_motors.go_backward();
-    delay(100);
-    Serial.println("Line tracking backward: Right of line.");
-  } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
-    main_motors.move_forward(20);
-    main_motors.change_MR_speed(-10);
-    main_motors.go_backward();
-    delay(100);
-    Serial.println("Line tracking backward: Left of line.");
-  } else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
-    // Something went wrong
-    //main_motors.move_forward(20);
-    Serial.println("Line tracking backward: Lost line, adjusting speed.");
   }
 }
