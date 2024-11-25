@@ -130,12 +130,12 @@ class MainMotors {
     main_motor_right->run(RELEASE);
   }
   //test function to allow for faster stops -- unverified
-  void hard_stop() {
-    //cuts forward power and brakes both motors
-    set_speed(0);
-    main_motor_left->run(BRAKE);
-    main_motor_right->run(BRAKE);
-  }
+  // void hard_stop() {
+  //   //cuts forward power and brakes both motors
+  //   set_speed(0);
+  //   main_motor_left->run(BRAKE);
+  //   main_motor_right->run(BRAKE);
+  // }
   //simple turn functions -- verified
   void turn_left(int speed) {
     set_speed(speed);
@@ -150,7 +150,7 @@ class MainMotors {
 
   void move_forward(int dist) {
     stop();
-    int move_speed = 200;
+    int move_speed = 230;
     set_speed(move_speed);
     unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*max_wheel_speed );
     go_forward();
@@ -197,48 +197,45 @@ class MainMotors {
     stop();
   }
 
-  void turn_90_left_back(bool move = true){
-    if (move) {
-    move_forward(20);
-    }
-    stop();
-    int turn_speed = 200;
-    set_MR_speed(turn_speed);
-    set_ML_speed(0);
-    double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
-    unsigned long t = 1000.0*Pi/(2*factor);
-    go_forward();
-    delay(t);
-    stop();
-  }
-  void turn_90_right_back(bool move = true){
-    if (move) {
-    move_forward(20);
-    }
-    stop();
-    int turn_speed = 200;
-    set_ML_speed(turn_speed);
-    set_MR_speed(0);
-    double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
-    unsigned long t = 1000.0*Pi/(2*factor);
-    go_forward();
-    delay(t);
-    stop();
-  }
+  // void turn_90_left_back(bool move = true){
+  //   if (move) {
+  //   move_forward(20);
+  //   }
+  //   stop();
+  //   int turn_speed = 200;
+  //   set_MR_speed(turn_speed);
+  //   set_ML_speed(0);
+  //   double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
+  //   unsigned long t = 1000.0*Pi/(2*factor);
+  //   go_forward();
+  //   delay(t);
+  //   stop();
+  // }
+  // void turn_90_right_back(bool move = true){
+  //   if (move) {
+  //   move_forward(20);
+  //   }
+  //   stop();
+  //   int turn_speed = 200;
+  //   set_ML_speed(turn_speed);
+  //   set_MR_speed(0);
+  //   double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
+  //   unsigned long t = 1000.0*Pi/(2*factor);
+  //   go_forward();
+  //   delay(t);
+  //   stop();
+  // }
 
-  void turn_180(){
-    stop();
-    int turn_speed = 180;
-    set_speed(turn_speed);
-    unsigned long t = 1000.0*Pi/( 2*(turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base) );
-    ML_run(BACKWARD);
-    MR_run(FORWARD);
-    delay(t);
-    stop();
-  }
-
-
-
+  // void turn_180(){
+  //   stop();
+  //   int turn_speed = 180;
+  //   set_speed(turn_speed);
+  //   unsigned long t = 1000.0*Pi/( 2*(turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base) );
+  //   ML_run(BACKWARD);
+  //   MR_run(FORWARD);
+  //   delay(t);
+  //   stop();
+  // }
 };
 
 MainMotors main_motors; //create main motors object
@@ -334,34 +331,49 @@ int get_line_state(){
     return 5;//at left junction
   } else if (fls_state == 0 && frs_state == 1){
     return 6;//at right junction
-  } else{
+  } else if(fls_state == 1 && frs_state == 1){
     return 7; //at T junction
+  } else {
+    return 0; //really shouldnt run
   }
 }
 
 void turn_left_until_line(){
-  main_motors.move_forward(80);
-  main_motors.turn_left(100);
-  // while (get_line_state() != 5){
+  // main_motors.move_forward(80);
+  // main_motors.turn_left(100);
+  // // while (get_line_state() != 5){
+  // // delay(50);
+  // // }
+  // main_motors.turn_left(50);
+  // while (get_line_state() != 1){
   // delay(50);
   // }
-  main_motors.turn_left(50);
-  while (get_line_state() != 1){
-  delay(50);
-  }
+  // main_motors.stop();
+
+  main_motors.move_forward(30);
+  main_motors.set_MR_speed(150);
+  main_motors.set_ML_speed(0);
+  main_motors.go_forward();
+  while (get_line_state() != 1);
   main_motors.stop();
 }
 
 void turn_right_until_line(){
-  main_motors.move_forward(80);
-  main_motors.turn_right(100);
-  while (get_line_state() != 6){
-  delay(50);
-  }
-  main_motors.turn_right(50);
-  while (get_line_state() != 1){
-  delay(50);
-  }
+  // main_motors.move_forward(80);
+  // main_motors.turn_right(100);
+  // while (get_line_state() != 6){
+  // delay(50);
+  // }
+  // main_motors.turn_right(50);
+  // while (get_line_state() != 1){
+  // delay(50);
+  // }
+  // main_motors.stop();
+  main_motors.move_forward(30);
+  main_motors.set_ML_speed(150);
+  main_motors.set_MR_speed(0);
+  main_motors.go_forward();
+  while (get_line_state() != 1);
   main_motors.stop();
 }
 
