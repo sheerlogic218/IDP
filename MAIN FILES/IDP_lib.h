@@ -28,7 +28,7 @@ class MainMotors {
     //test values
     float wheel_radius = 32.5; //mm
     int wheel_base = 170; //mm
-    float max_wheel_angular_speed = 1.78*Pi;//(5*360)/(5*2*Pi); //max angular speed of wheel, radians per second
+    float max_wheel_angular_speed = 1.7*Pi;//(5*360)/(5*2*Pi); //max angular speed of wheel, radians per second
     //double wheel_angular_speed_100 = 0;
     float max_wheel_speed = max_wheel_angular_speed*wheel_radius; //max linear speed of wheel mm/s
     int sensor_wheel_dist = 110;//mm
@@ -427,6 +427,7 @@ void line_track_forward() {
     Serial.println("Line tracking forward: Left of line.");
   } else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
     // Something went wrong
+    main_motors.move_backward(10);
     main_motors.stop();
     Serial.println("Line tracking forward: Lost line, stopping.");
   }
