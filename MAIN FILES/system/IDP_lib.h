@@ -177,7 +177,7 @@ class MainMotors {
   }
   void move_backward(int dist) {
     stop();
-    int move_speed = 150;
+    int move_speed = 200;
     set_speed(move_speed);
     unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*max_wheel_speed );
     go_backward();
@@ -261,34 +261,52 @@ MainMotors main_motors; //create main motors object
 class Servo_claws {
   private:
   int servo_time = 20;
-  int min_angle = 0;
-  int max_angle = 80;
+  int min_angle = 10;
+  int max_angle = 82;
   int current_angle = 0;
   int open_angle = 70;
   //sets the servos to their "0" point
   void go_zero(){
-    for (int angle = current_angle; angle >= min_angle; angle -= 1){
-    //left has "0" at 270 due to being mirrored
-    left_servo.write(max_angle-angle);
-    right_servo.write(angle);
-    Serial.print("Servo angle: ");
-    Serial.println(angle);
-    //controlls the speed of the servo rotations
-    delay(servo_time);
+    // for (int angle = current_angle; angle >= min_angle; angle -= 1){
+    // //left has "0" at 270 due to being mirrored
+    // left_servo.write(max_angle-angle);
+    // right_servo.write(angle);
+    // Serial.print("Servo angle: ");
+    // Serial.println(angle);
+    // //controlls the speed of the servo rotations
+    // delay(servo_time);
+    // }
+    for (int angle = current_angle; angle >= min_angle; angle -=1 ){
+      left_servo.write(max_angle - angle);
+      delay(servo_time);
     }
+    for (int angle = current_angle; angle >= min_angle; angle -=1 ){
+      right_servo.write(angle);
+      delay(servo_time);
+    }
+
     current_angle = 0;
   }
   //turns the servos to a target angle relative to their "0"
   void steady_turn(int target_angle){
   if (target_angle<max_angle && target_angle > min_angle){
+    // for (int angle = min_angle; angle <= target_angle; angle += 1){
+    // //left has "0" at 270 due to being mirrored
+    // left_servo.write(max_angle-angle);
+    // right_servo.write(angle);
+    // Serial.print("Servo angle: ");
+    // Serial.println(angle);
+    // //controlls the speed of the servo rotations
+    // delay(servo_time);
+    // }
+
     for (int angle = min_angle; angle <= target_angle; angle += 1){
-    //left has "0" at 270 due to being mirrored
-    left_servo.write(max_angle-angle);
-    right_servo.write(angle);
-    Serial.print("Servo angle: ");
-    Serial.println(angle);
-    //controlls the speed of the servo rotations
-    delay(servo_time);
+      right_servo.write(angle);
+      delay(servo_time);
+    }
+    for (int angle = min_angle; angle <= target_angle; angle += 1){
+      left_servo.write(max_angle-angle);
+      delay(servo_time);
     }
     current_angle = target_angle;
   }
@@ -348,8 +366,8 @@ int ls_state = 0;
 int rs_state = 0;
 int frs_state = 0;
 
-int tof_block_distance;
-bool has_block;
+int tof_block_distance = 1000;
+bool has_block = false;
 
 
 int soft_turn_rate = 10;
@@ -406,22 +424,24 @@ int get_line_state(){
 }
 
 void turn_left_until_line(){
-  main_motors.move_backward(5);
-  main_motors.set_MR_speed(230);
+  main_motors.move_backward(20);
+  main_motors.set_MR_speed(210);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
   delay(50);
   while (get_line_state() != 1);
+  //delay(50);
   main_motors.stop();
 }
 
 void turn_right_until_line(){
-  main_motors.move_backward(5);
-  main_motors.set_ML_speed(230);
+  main_motors.move_backward(20);
+  main_motors.set_ML_speed(210);
   main_motors.set_MR_speed(0);
   main_motors.go_forward();
   delay(50);
   while (get_line_state() != 1);
+  //delay(50);
   main_motors.stop();
 }
 
@@ -482,9 +502,28 @@ void setup() {
   leds.blue_blink();
   leds.red_blink();
 
+
+  //Claws.close();
+  delay(1500);
+  Claws.open();
+
+  delay(5000);
+  Claws.close();
+
 }
 
 
+void pick_up_block(){
+  tof_block_distance = sensor.getDistance()-20;
+  if (tof_block_distance <= 40 && has_block == false){ 
+    Claws.open();
+    main_motors.move_forward(50);
+    Claws.close();
+    main_motors.move_backward(50);
+    has_block = true;
+    read_magnet_sensor();
+  }
+}
 
 // Function for line tracking forward
 void line_track_forward() {
@@ -495,11 +534,11 @@ void line_track_forward() {
     main_motors.go_forward();
     Serial.println("Line tracking forward: On line.");
   } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
-    main_motors.change_MR_speed(10);
+    main_motors.change_MR_speed(12);
     main_motors.go_forward();
     Serial.println("Line tracking forward: Right of line.");
   } else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-    main_motors.change_ML_speed(10);
+    main_motors.change_ML_speed(12);
     main_motors.go_forward();
     Serial.println("Line tracking forward: Left of line.");
   } else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
@@ -509,13 +548,5 @@ void line_track_forward() {
     Serial.println("Line tracking forward: Lost line, stopping.");
   }
 
-  tof_block_distance = sensor.getDistance()-20;
-  if (tof_block_distance <= 30 && has_block == false){ 
-    Claws.open();
-    main_motors.move_forward(50);
-    Claws.close();
-    main_motors.move_backward(50);
-    has_block = true;
-    read_magnet_sensor();
-  }
+  pick_up_block();
 }

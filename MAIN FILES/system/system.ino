@@ -166,26 +166,41 @@ int get_turn_direction()
 
 void do_a_move()
 {
-    if(move_mode == NO_MOVE)
-    {
+    if(move_mode == NO_MOVE){
         Serial.println("Move mode: NO_MOVE");
     }
-    if(move_mode == FORWARD_MOVE)
-    {
+    if(move_mode == FORWARD_MOVE){
         Serial.println("Move mode: FORWARD_MOVE");
         line_track_forward();
     }
-    if(move_mode == DIP)
-    {
+    if(move_mode == DIP){
         Serial.println("Move mode: DIP");
+        leds.blue_blink();
         //looks like its gonna do a forward then backward
+        // int dip_time = 150;
+        // int time_0 = millis();
+        // while (time_0+dip_time > millis()){
+        //     line_track_forward();
+        // }
         main_motors.move_forward(50);
-        main_motors.move_backward(45);  //My gut tells me the code wont work properly here, consider adding print lines
-        move_mode = REVERSE_MOVE;
+        //Claws.open();
+        //has_block = false;
+        main_motors.move_backward(50);  //My gut tells me the code wont work properly here, consider adding print lines
+        main_motors.set_speed(150);
+        main_motors.go_backward();
+        while(get_line_state() < 5){
+            leds.blue_blink();
+        }
+        leds.red_blink();
+        main_motors.stop();
+        main_motors.move_forward(10);
+        //move_mode = REVERSE_MOVE;
     }
     if(move_mode == REVERSE_MOVE)
     {
         Serial.println("Move mode: REVERSE_MOVE");
+        main_motors.set_speed(150);
+        main_motors.go_backward();
     }
 }
 
