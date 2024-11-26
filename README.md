@@ -1,4 +1,4 @@
-# IDP Project Documentation
+# IDP Project
 
 ## Introduction
 
@@ -318,4 +318,4 @@ Most errors will come from mistuning.
 
 ## Contributing
 
-Contributions are welcome in the form of verbal feedback. Please email [lh848@cam.ac.uk](mailto:lh848@cam.ac.uk).
+Contributions are welcome in the form of feedback. Please email [lh848@cam.ac.uk](mailto:lh848@cam.ac.uk).
