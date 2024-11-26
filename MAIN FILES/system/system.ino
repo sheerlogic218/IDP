@@ -1,77 +1,107 @@
 #include "IDP_lib.h"
 
 // Constants for turn directions
-const int STRAIGHT_ON             = 0;
-const int RIGHT                   = 1;
-const int FULL_AROUND             = 2;
-const int LEFT                    = 3;
-const int SPECIAL_FROM_THE_LEFT   = 4;
-const int SPECIAL_FROM_THE_RIGHT  = 5;
-const int STOP                    = 7;
-const int RIGHT_DIP               = 8;
-const int LEFT_DIP                = 9;
-const int TESTING                 = 10;
-const int LEGACY_LEFT             = 11;
-const int LEGACY_RIGHT            = 12;
+const int STRAIGHT_ON                   = 0;
+const int RIGHT                         = 1;
+const int LEFT                          = 3;
+const int SPECIAL_FROM_THE_LEFT         = 4;
+const int SPECIAL_FROM_THE_RIGHT        = 5;
+const int STOP                          = 7;
+const int RIGHT_DROP_OFF                = 8;
+const int LEFT_DROP_OFF                 = 9;
+const int TESTING                       = 10;
+const int LEGACY_LEFT                   = 11;
+const int LEGACY_RIGHT                  = 12;
+const int EXPECT_BLOCK_AFTER_NEXT  = 13;
+const int ROBOT_GO_WEE_WOO_AFTER_NEXT   = 14;   //I love you Bailen, pls allow it. I was laughing so so hard here.
+
+// Navigation variables
+int progress = 0;
+int special_mode = -1;
+int special_progress = 0;
+int distance_between_centre_junction_and_houses = 330;  //Will likely need tuning, may vary between houses
+long last_turn_time = 0;
+long min_time_between_junctions = 100;
+bool block_expected = true;
+
 
 // Path array defining the robot's route
 int path[] = {
     // Move to the first block
     LEFT,
     // Navigate to approperiate centre and end with the second block
-    RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,
+    RIGHT, STRAIGHT_ON, RIGHT, EXPECT_BLOCK_AFTER_NEXT, SPECIAL_FROM_THE_LEFT, //Love how the first magical demonstration of EXPECT_BLOCK_AFTER_NEXT_TURN is in a special
     // Complete this loop again ready to gather the third block
     RIGHT, RIGHT, RIGHT, SPECIAL_FROM_THE_LEFT,
     // Collect the third block and place it in the recycling centre
-    LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
+    EXPECT_BLOCK_AFTER_NEXT, LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
     // Collect the fourth block
-    RIGHT, LEFT, LEFT, STRAIGHT_ON,
+    RIGHT, LEFT, LEFT, EXPECT_BLOCK_AFTER_NEXT, STRAIGHT_ON,
     // Recycle the fourth block
     LEFT, STRAIGHT_ON, LEFT, SPECIAL_FROM_THE_RIGHT,
-    // Handle hidden block on this road - not got this far quite yet
-    LEFT,
-    // End of path
-    STOP
+    // Handle hidden block on this road - not tested this far quite yet
+    ROBOT_GO_WEE_WOO_AFTER_NEXT, LEFT, LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
+    // Handle final hidden block
+    LEFT, RIGHT, RIGHT, ROBOT_GO_WEE_WOO_AFTER_NEXT, STRAIGHT_ON, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_RIGHT,
+    // End of path - this just returns it to its starting point as a show off move.
+    LEFT, RIGHT, RIGHT, LEFT, STOP  //My cravings to try and make the lobster ram into the house are unparalelled, I think it would be funny.
 };
 
 // Special paths for different modes
 int special_path[][5] = {
     // Mode 0 - Going to the No Magnet centre from the north-west
-    {STRAIGHT_ON, RIGHT_DIP, RIGHT, LEFT, STRAIGHT_ON},
+    {STRAIGHT_ON, RIGHT_DROP_OFF, RIGHT, LEFT, STRAIGHT_ON},
     // Mode 1 - Going to the Magnet centre from the north-west
-    {RIGHT, RIGHT_DIP, LEFT, STOP, STOP},
+    {RIGHT, RIGHT_DROP_OFF, LEFT, STOP, STOP},
     // Mode 2 - Going to the No Magnet centre from the north-east
-    {LEFT_DIP, RIGHT, LEFT, STRAIGHT_ON, STOP},
+    {LEFT_DROP_OFF, RIGHT, LEFT, STRAIGHT_ON, STOP},
     // Mode 3 - Going to the Magnet centre from the north-west
-    {STRAIGHT_ON, LEFT, RIGHT_DIP, LEFT, STOP},
-    // Mode 4 - Testing routine, can be changed, is redundant.
-    {LEFT, LEFT_DIP, STOP, STOP, STOP},
+    {STRAIGHT_ON, LEFT, RIGHT_DROP_OFF, LEFT, STOP},
+    // Mode 4 - Testing routine, can be changed, is redundant. Prepared to test house wee_wooing
+    {LEFT, ROBOT_GO_WEE_WOO_AFTER_NEXT, LEFT, LEFT, STOP},
 };
 
-// Navigation variables
-int progress = 0;
-int special_mode = -1;
-int special_progress = 0;
-long last_turn_time = 0;
-long min_time_between_junctions = 100;
-
 /**
- * @brief Performs a dipping maneuver to deliver a block into a recycling center.
+ * @brief Performs a dropping off maneuver to deliver and deposit a block into a recycling center.
  *        The robot moves forward, releases the block, then reverses back to the line.
  */
-void dip()
+void drop_off()
 {
-    Serial.println("Move mode: DIP");
+    Serial.println("Move mode: Drop Off Block");
     leds.blue_blink();
-    main_motors.move_forward(50);
-    main_motors.move_backward(50);
+    move_forward_tracking(50);
+    delay(50);
+    Claws.open();
+    main_motors.move_backward(50);  //Cant track backwards due to sensor positioning.
     main_motors.set_speed(150);
     main_motors.go_backward();
     // Continue moving backward until a line is detected (at which point the line state is >= 5)
     while(get_line_state() < 5){
         leds.blue_blink();
     }
+    Claws.close();
     leds.red_blink();
+    main_motors.stop();
+    move_forward_tracking(10);
+}
+
+/**
+ * @brief Performs a grabbing maneuver to grab an off course block.
+ *        The robot opens wide, moves forward, hopes and reverses.
+ *        The system may benefit from further going forward.
+ */
+void grab_from_nook()
+{
+    Serial.println("Move mode: Praying grab from the nook works");
+    leds.red_on();  //idk what red means, might be being naughty for doing this but i want red.
+    pick_up_block();
+    main_motors.go_backward();
+    // Continue moving backward until a line is detected (at which point the line state is >= 5)
+    while(get_line_state() < 5){
+        leds.blue_blink();
+    }
+    leds.red_blink();
+    read_magnet_sensor();   //LEDS must be updated
     main_motors.stop();
     main_motors.move_forward(10);
 }
@@ -97,15 +127,15 @@ void turn_junction(int turn_direction) {
             // Turn left at the junction
             turn_left_until_line();
             break;
-        case RIGHT_DIP:
+        case RIGHT_DROP_OFF:
             // Deposit block into the centre after turning right
             turn_right_until_line();
-            dip();
+            drop_off();
             break;
-        case LEFT_DIP:
+        case LEFT_DROP_OFF:
             // Deposit block into the centre after turning left
             turn_left_until_line();
-            dip();
+            drop_off();
             break;
         case SPECIAL_FROM_THE_LEFT:
             // Navigate to approperiate centre from the north-west-most corner of the map headed to the middle.
@@ -129,6 +159,18 @@ void turn_junction(int turn_direction) {
         case LEGACY_RIGHT:
             // Legacy turn right function
             main_motors.turn_90_right();
+            break;
+        case EXPECT_BLOCK_AFTER_NEXT:
+            //This should go before the turn command for the next junction
+            block_expected = true;
+            turn_junction(get_turn_direction());
+            break;
+        case ROBOT_GO_WEE_WOO_AFTER_NEXT:
+            //This is the finding the block in the nooks
+            turn_junction(get_turn_direction());
+            move_forward_tracking(distance_between_centre_junction_and_houses);
+            main_motors.turn_90_right();    //Means it always needs to go in a specific way.
+            grab_from_nook();
             break;
         default:
             // Stop the robot for invalid direction
@@ -213,7 +255,8 @@ void system_decisions() {
     // Block logic
     tof_block_distance = tof_sensor.getDistance()-30;
     //Pick up the block if it is sensed within threshold
-    if (tof_block_distance <= 40 && has_block == false){ 
+    if (tof_block_distance <= 40 && has_block == false && block_expected) //not sure how i feel about has_block, i suppose it prevents walls?
+    { 
         pick_up_block();
     }
 
@@ -239,5 +282,6 @@ void pick_up_block(){
     //This needs to be tested for lower numbers
     main_motors.move_backward(80);  
     has_block = true;
-    read_magnet_sensor();
+    block_expected = false;
+    read_magnet_sensor(); //updates is_magnet
 }

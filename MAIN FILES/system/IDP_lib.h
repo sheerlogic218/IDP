@@ -46,7 +46,9 @@ class MainMotors {
     //test values
     float wheel_radius = 32.5; //mm
     int wheel_base = 170; //mm
-    float max_wheel_angular_speed = 1.7*Pi;//(5*360)/(5*2*Pi); //max angular speed of wheel, radians per second
+    //max angular speed of wheel, radians per second
+    float max_wheel_angular_speed = 1.7*Pi;
+    //(5*360)/(5*2*Pi);
     //double wheel_angular_speed_100 = 0;
     float max_wheel_speed = max_wheel_angular_speed*wheel_radius; //max linear speed of wheel mm/s
     int sensor_wheel_dist = 110;//mm
@@ -340,7 +342,7 @@ bool has_block = false;
 int soft_turn_rate = 10;
 
 //function to read data from the sensors
-void read_sensors(){
+void read_line_sensors(){
   //0 is black, 1 is white
   fls_state = digitalRead(far_left_sensor);
   ls_state = digitalRead(left_sensor);
@@ -368,7 +370,7 @@ bool read_magnet_sensor(){
 }
 
 int get_line_state(){
-  read_sensors();
+  read_line_sensors();
   if (fls_state == 0 && frs_state == 0){
     if(ls_state == 1 && rs_state == 1){
       return 1; //1 = forward
@@ -414,7 +416,7 @@ void turn_right_until_line(){
 
 // Function for line tracking forward
 void line_track_forward(int forward_speed = 230) {
-  read_sensors();
+  read_line_sensors();
   // Test code for 4 sensor following
   if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
     main_motors.set_speed(forward_speed);
