@@ -4,7 +4,7 @@
 #include "Wire.h"
 #include "DFRobot_VL53L0X.h"
 
-DFRobot_VL53L0X sensor;
+DFRobot_VL53L0X tof_sensor;
 
 const byte hallPinLeft = A0; // AH3503 sensor connected to A0 5volt and ground
 const byte hallPinRight = A1; // AH3503 sensor connected to A0 5volt and ground
@@ -492,11 +492,11 @@ void setup() {
   //tof sensor 
   Wire.begin();
   //Set I2C sub-device address
-  sensor.begin(0x50);
+  tof_sensor.begin(0x50);
   //Set to Back-to-back mode and high precision mode
-  sensor.setMode(sensor.eContinuous,sensor.eHigh);
+  tof_sensor.setMode(tof_sensor.eContinuous,tof_sensor.eHigh);
   //Laser rangefinder begins to work
-  sensor.start();
+  tof_sensor.start();
 
   //LED
   pinMode(led1pin, OUTPUT);
@@ -511,12 +511,13 @@ void setup() {
 
 
 void pick_up_block(){
-  tof_block_distance = sensor.getDistance()-20;
+  tof_block_distance = tof_sensor.getDistance()-30;
   if (tof_block_distance <= 40 && has_block == false){ 
+    main_motors.stop();
     Claws.open();
-    main_motors.move_forward(50);
+    main_motors.move_forward(80);
     Claws.close();
-    main_motors.move_backward(50);
+    main_motors.move_backward(80);
     has_block = true;
     read_magnet_sensor();
   }

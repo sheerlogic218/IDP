@@ -109,6 +109,14 @@ void loop() {
 
 // Function for making system decisions based on sensor readings
 void system_decisions() {
+    // Claws.open();
+    // delay(1000);
+    // Claws.close();
+    // delay(1000);
+    //main_motors.move_forward(150);
+
+
+
     do_a_move();
     Serial.println("Executing system decisions.");
     //Block logic
