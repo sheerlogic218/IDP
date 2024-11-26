@@ -87,7 +87,7 @@ void turn_junction(int turn_direction) {
     switch (turn_direction) {
         case STRAIGHT_ON:
             // Move forward through the junction, ideally this wouldn't be so blind.
-            main_motors.move_forward_tracking(30);
+            move_forward_tracking(30);
             break;
         case RIGHT:
             // Turn right at the junction
@@ -224,12 +224,20 @@ void system_decisions() {
     }
 }
 
+void setup()
+{
+    IDP_setup();
+    main_motors.move_forward(50);
+}
+
+//executes the pick_up_block() routine
 void pick_up_block(){
     main_motors.stop();
     Claws.open();
     main_motors.move_forward(80);
     Claws.close();
-    main_motors.move_backward(80);  //This needs to be tested for lower numbers
+    //This needs to be tested for lower numbers
+    main_motors.move_backward(80);  
     has_block = true;
     read_magnet_sensor();
 }

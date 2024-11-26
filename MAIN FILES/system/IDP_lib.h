@@ -460,7 +460,7 @@ void interrupt_function()
   last_interrupt = t;
 }
 
-void setup() {
+void IDP_setup() {
 
   //stops motors straight away
   if (AFMS.begin()){
