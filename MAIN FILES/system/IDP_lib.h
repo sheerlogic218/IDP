@@ -175,6 +175,7 @@ class MainMotors {
     delay(t);
     stop();
   }
+
   void move_backward(int dist) {
     stop();
     int move_speed = 200;
@@ -214,46 +215,6 @@ class MainMotors {
     delay(t);
     stop();
   }
-
-  // void turn_90_left_back(bool move = true){
-  //   if (move) {
-  //   move_forward(20);
-  //   }
-  //   stop();
-  //   int turn_speed = 200;
-  //   set_MR_speed(turn_speed);
-  //   set_ML_speed(0);
-  //   double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
-  //   unsigned long t = 1000.0*Pi/(2*factor);
-  //   go_forward();
-  //   delay(t);
-  //   stop();
-  // }
-  // void turn_90_right_back(bool move = true){
-  //   if (move) {
-  //   move_forward(20);
-  //   }
-  //   stop();
-  //   int turn_speed = 200;
-  //   set_ML_speed(turn_speed);
-  //   set_MR_speed(0);
-  //   double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
-  //   unsigned long t = 1000.0*Pi/(2*factor);
-  //   go_forward();
-  //   delay(t);
-  //   stop();
-  // }
-
-  // void turn_180(){
-  //   stop();
-  //   int turn_speed = 180;
-  //   set_speed(turn_speed);
-  //   unsigned long t = 1000.0*Pi/( 2*(turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base) );
-  //   ML_run(BACKWARD);
-  //   MR_run(FORWARD);
-  //   delay(t);
-  //   stop();
-  // }
 };
 
 MainMotors main_motors; //create main motors object
@@ -451,14 +412,53 @@ void turn_right_until_line(){
   main_motors.stop();
 }
 
-void interrupt_function(){
+// Function for line tracking forward
+void line_track_forward(int forward_speed = 230) {
+  read_sensors();
+  // Test code for 4 sensor following
+  if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+    main_motors.set_speed(forward_speed);
+    main_motors.go_forward();
+  } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+    main_motors.change_MR_speed(12);
+    main_motors.go_forward();
+  } else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+    main_motors.change_ML_speed(12);
+    main_motors.go_forward();
+  } else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+    // Something went wrong
+    main_motors.move_backward(10);
+    main_motors.stop();
+  }
+  // CODE MOVEMENT
+  // Block logic moved to system.ino
+}
+
+//Less accurate distance than regular move_forward due to turning, 
+void move_forward_tracking(int dist) 
+{  //New function, bailen pls fix if errors exist
+  main_motors.stop();
+  int move_speed = 230;
+  main_motors.set_speed(move_speed);
+  unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*max_wheel_speed );
+  main_motors.go_forward();
+  unsigned long move_forward_tracking_start = millis();
+  while(millis() < move_forward_tracking_start + t)
+  {
+    line_track_forward(move_speed);
+  }
+  stop();
+}
+
+void interrupt_function()
+{
   volatile static unsigned long last_interrupt = 0;
   unsigned long t = millis();
   if (t - last_interrupt > 500UL){
     state = !state;
   }
   last_interrupt = t;
-  }
+}
 
 void setup() {
 
@@ -471,36 +471,46 @@ void setup() {
     while(1);
   }
   main_motors.stop();
+
   //waits for button press to start program
   pinMode(3,INPUT);
   while ( !digitalRead(3) );
+
   //sets up the servo pins and holds at "0"
   left_servo.attach(9);
   right_servo.attach(10);
   Claws.close();
   delay(1000);
+
   //sets up serial communication
   Serial.begin(9600);
   Serial.println("Serial communication started");
+
   //sets the interrupt pin
   attachInterrupt(digitalPinToInterrupt(3), interrupt_function, RISING);
+
   //sets up line sensor pins
   pinMode(left_sensor, INPUT);
   pinMode(right_sensor, INPUT);
   pinMode(far_left_sensor,INPUT);
   pinMode(far_right_sensor, INPUT);
+
   //tof sensor 
   Wire.begin();
+
   //Set I2C sub-device address
   tof_sensor.begin(0x50);
+
   //Set to Back-to-back mode and high precision mode
   tof_sensor.setMode(tof_sensor.eContinuous,tof_sensor.eHigh);
+
   //Laser rangefinder begins to work
   tof_sensor.start();
 
   //LED
   pinMode(led1pin, OUTPUT);
   pinMode(led2pin, OUTPUT);
+  //Can we remove delays in the setup
   leds.blue_on();
   delay(500);
   leds.blue_off();
@@ -509,42 +519,5 @@ void setup() {
   leds.red_blink();
 }
 
-
-void pick_up_block(){
-  tof_block_distance = tof_sensor.getDistance()-30;
-  if (tof_block_distance <= 40 && has_block == false){ 
-    main_motors.stop();
-    Claws.open();
-    main_motors.move_forward(80);
-    Claws.close();
-    main_motors.move_backward(80);
-    has_block = true;
-    read_magnet_sensor();
-  }
-}
-
-// Function for line tracking forward
-void line_track_forward() {
-  read_sensors();
-  // Test code for 4 sensor following
-  if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-    main_motors.set_speed(230);
-    main_motors.go_forward();
-    Serial.println("Line tracking forward: On line.");
-  } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
-    main_motors.change_MR_speed(12);
-    main_motors.go_forward();
-    Serial.println("Line tracking forward: Right of line.");
-  } else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-    main_motors.change_ML_speed(12);
-    main_motors.go_forward();
-    Serial.println("Line tracking forward: Left of line.");
-  } else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
-    // Something went wrong
-    main_motors.move_backward(10);
-    main_motors.stop();
-    Serial.println("Line tracking forward: Lost line, stopping.");
-  }
-
-  pick_up_block();
-}
+// CODE MOVEMENT
+// Block logic moved to system.ino

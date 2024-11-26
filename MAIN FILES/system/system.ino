@@ -1,167 +1,183 @@
 #include "IDP_lib.h"
 
 // Constants for turn directions
-const int STRAIGHT_ON = 0;
-const int RIGHT = 1;
-const int FULL_AROUND = 2;
-const int LEFT = 3;
-const int SPECIAL_FROM_THE_LEFT = 4;
-const int SPECIAL_FROM_THE_RIGHT = 5;
-const int STOP = 7;
-const int RIGHT_DIP = 8;
-const int LEFT_DIP = 9;
-const int TESTING = 10;
-
-// constants for move directions
-const int NO_MOVE = 0;
-const int FORWARD_MOVE = 1;
-const int DIP = 2;
-const int REVERSE_MOVE = 3;
-const int KEEP_GOING_UNTIL_END = 4;
+const int STRAIGHT_ON             = 0;
+const int RIGHT                   = 1;
+const int FULL_AROUND             = 2;
+const int LEFT                    = 3;
+const int SPECIAL_FROM_THE_LEFT   = 4;
+const int SPECIAL_FROM_THE_RIGHT  = 5;
+const int STOP                    = 7;
+const int RIGHT_DIP               = 8;
+const int LEFT_DIP                = 9;
+const int TESTING                 = 10;
+const int LEGACY_LEFT             = 11;
+const int LEGACY_RIGHT            = 12;
 
 // Path array defining the robot's route
 int path[] = {
-    LEFT,                        // BLOCK
-    RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,   // END SPECIAL AT MIDDLE BLOCK
-    RIGHT, RIGHT, RIGHT, SPECIAL_FROM_THE_LEFT,         // END SPECIAL AT MIDDLE BLOCK
-    LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,           // END SPECIAL AT MIDDLE BLOCK
-    RIGHT, LEFT, LEFT, STRAIGHT_ON,                     // BLOCK
-    LEFT, STRAIGHT_ON, LEFT, SPECIAL_FROM_THE_RIGHT,    // END SPECIAL AT MIDDLE BLOCK
-    LEFT,                                               // There's a hidden block on this road
-    STOP                                                // Use comments to explain each part of the route.
+    // Move to the first block
+    LEFT,
+    // Navigate to approperiate centre and end with the second block
+    RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,
+    // Complete this loop again ready to gather the third block
+    RIGHT, RIGHT, RIGHT, SPECIAL_FROM_THE_LEFT,
+    // Collect the third block and place it in the recycling centre
+    LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
+    // Collect the fourth block
+    RIGHT, LEFT, LEFT, STRAIGHT_ON,
+    // Recycle the fourth block
+    LEFT, STRAIGHT_ON, LEFT, SPECIAL_FROM_THE_RIGHT,
+    // Handle hidden block on this road - not got this far quite yet
+    LEFT,
+    // End of path
+    STOP
 };
 
 // Special paths for different modes
 int special_path[][5] = {
-    {STRAIGHT_ON, RIGHT_DIP, RIGHT, LEFT, STRAIGHT_ON}, //
-    {RIGHT, RIGHT_DIP, LEFT, STOP, STOP}, // RLEFT goes forward after
+    // Mode 0 - Going to the No Magnet centre from the north-west
+    {STRAIGHT_ON, RIGHT_DIP, RIGHT, LEFT, STRAIGHT_ON},
+    // Mode 1 - Going to the Magnet centre from the north-west
+    {RIGHT, RIGHT_DIP, LEFT, STOP, STOP},
+    // Mode 2 - Going to the No Magnet centre from the north-east
     {LEFT_DIP, RIGHT, LEFT, STRAIGHT_ON, STOP},
+    // Mode 3 - Going to the Magnet centre from the north-west
     {STRAIGHT_ON, LEFT, RIGHT_DIP, LEFT, STOP},
+    // Mode 4 - Testing routine, can be changed, is redundant.
     {LEFT, LEFT_DIP, STOP, STOP, STOP},
 };
 
-//Navigation variables
+// Navigation variables
 int progress = 0;
 int special_mode = -1;
 int special_progress = 0;
-int move_mode = FORWARD_MOVE;   //start life by moving forward
 long last_turn_time = 0;
-long min_time_between_junctions = 2000; //SHOULDNT NEED TO EXIST, its a failsafe
+long min_time_between_junctions = 100;
 
+/**
+ * @brief Performs a dipping maneuver to deliver a block into a recycling center.
+ *        The robot moves forward, releases the block, then reverses back to the line.
+ */
+void dip()
+{
+    Serial.println("Move mode: DIP");
+    leds.blue_blink();
+    main_motors.move_forward(50);
+    main_motors.move_backward(50);
+    main_motors.set_speed(150);
+    main_motors.go_backward();
+    // Continue moving backward until a line is detected (at which point the line state is >= 5)
+    while(get_line_state() < 5){
+        leds.blue_blink();
+    }
+    leds.red_blink();
+    main_motors.stop();
+    main_motors.move_forward(10);
+}
 
-// Junction function to handle the robot's movements at junctions
+/**
+ * @brief Handles the robot's movement at junctions based on the given turn direction.
+ *
+ * @param turn_direction The direction the robot should turn at the junction, obtained from get_turn_direction()
+ */
 void turn_junction(int turn_direction) {
     Serial.print("Junction turn_direction: ");
     Serial.println(turn_direction);
     switch (turn_direction) {
         case STRAIGHT_ON:
-            // Code to go straight
-            main_motors.move_forward(30);
+            // Move forward through the junction, ideally this wouldn't be so blind.
+            main_motors.move_forward_tracking(30);
             break;
         case RIGHT:
-            // Code to turn right
+            // Turn right at the junction
             turn_right_until_line();
             break;
         case LEFT:
-            // Code to turn left
+            // Turn left at the junction
             turn_left_until_line();
             break;
         case RIGHT_DIP:
-            // Code to turn right
+            // Deposit block into the centre after turning right
             turn_right_until_line();
-            move_mode = DIP;
+            dip();
             break;
         case LEFT_DIP:
-            // Code to turn left
+            // Deposit block into the centre after turning left
             turn_left_until_line();
-            move_mode = DIP;
+            dip();
             break;
         case SPECIAL_FROM_THE_LEFT:
-            // Code for special action to the left
+            // Navigate to approperiate centre from the north-west-most corner of the map headed to the middle.
             special_mode = 0 + is_magnet;
             turn_junction(get_turn_direction());
             break;
         case SPECIAL_FROM_THE_RIGHT:
-            // Code for special action to the left
+            // Navigate to approperiate centre from the north-east-most corner of the map headed to the middle.
             special_mode = 2 + is_magnet;
             turn_junction(get_turn_direction());
             break;
         case TESTING:
+            // Enter testing mode, this is redundant and will be removed soon.
             special_mode = 4;
             turn_junction(get_turn_direction());
             break;
+        case LEGACY_LEFT:
+            // Legacy turn left function
+            main_motors.turn_90_left();
+            break;
+        case LEGACY_RIGHT:
+            // Legacy turn right function
+            main_motors.turn_90_right();
+            break;
         default:
-            // Default action for invalid direction
+            // Stop the robot for invalid direction
             main_motors.stop();
             break;
     }
 }
 
-void loop() {
-    if (state) {
-        Serial.println("System is running.");
-        system_decisions();
-    } else {
-        Serial.println("System is not running.");
-        main_motors.stop();
-    }
-}
-
-// Function for making system decisions based on sensor readings
-void system_decisions() {
-    // Claws.open();
-    // delay(1000);
-    // Claws.close();
-    // delay(1000);
-    //main_motors.move_forward(150);
-
-
-
-    do_a_move();
-    Serial.println("Executing system decisions.");
-    //Block logic
-    // if (get_block_distance() < claw_range)
-    // {
-    //     //GRAB THE BLOCKKKK
-    // }
-    //Junction logic
-    if (get_line_state() >= 5) {        //If it misinterprets things as junctions look here.
-       Serial.println("At junction.");
-       turn_junction(get_turn_direction());
-    }
-}
-
+/**
+ * @brief Determines the next turn direction for the robot based on the predetermined navigaton paths.
+ *
+ * @return The value corresponding to the turn the robot will now perform.
+ */
 int get_turn_direction()
 {
     int direction;
     Serial.println("Getting turn direction...");
     Serial.print("Last turn time: ");
     Serial.println(last_turn_time);
-    move_mode = FORWARD_MOVE;
-    //not a huge fan of this, this function just shouldnt even be able to be called if the last turn was too recent.
-    //but if it works it works.
-    if(last_turn_time + min_time_between_junctions > millis())        //NEW feature to prevent multi junction attitude
+
+    // Failsafe for if we are trying to turn the same junction twice.
+    if(last_turn_time + min_time_between_junctions > millis())
     {
-        Serial.println("Failsafe triggered: Cancelling last turn.");
         progress--;
     }
-    if(progress > (sizeof(path)/sizeof(path[0]))) //sizeof(path) is the byte size not index size, if this works its a fluke
+
+    // Failsafe for if we are past the end of the path.
+    if(progress > (sizeof(path)/sizeof(path[0])))
     {
         Serial.println("End of path reached. Stopping.");
-        move_mode = 0;
+        state = HIGH;
         return STOP;
     }
+
     if(special_mode == -1)
     {
+        // Use the next direction from the main path
         direction = path[progress];
         progress++;
         last_turn_time = millis();
     }
     else
     {
+        // Use the next direction from the special path
         direction = special_path[special_mode][special_progress];
         special_progress++;
         last_turn_time = millis();
+
+        // Reset special mode if end of special path is reached
         if(direction == STOP)
         {
             Serial.println("End of special path. Resetting special mode.");
@@ -172,45 +188,48 @@ int get_turn_direction()
     return direction;
 }
 
-void do_a_move()
-{
-    if(move_mode == NO_MOVE){
-        Serial.println("Move mode: NO_MOVE");
-    }
-    if(move_mode == FORWARD_MOVE){
-        Serial.println("Move mode: FORWARD_MOVE");
-        line_track_forward();
-    }
-    if(move_mode == DIP){
-        Serial.println("Move mode: DIP");
-        leds.blue_blink();
-        //looks like its gonna do a forward then backward
-        // int dip_time = 150;
-        // int time_0 = millis();
-        // while (time_0+dip_time > millis()){
-        //     line_track_forward();
-        // }
-        main_motors.move_forward(50);
-        //Claws.open();
-        //has_block = false;
-        main_motors.move_backward(50);  //My gut tells me the code wont work properly here, consider adding print lines
-        main_motors.set_speed(150);
-        main_motors.go_backward();
-        while(get_line_state() < 5){
-            leds.blue_blink();
-        }
-        leds.red_blink();
+/**
+ * @brief Main program loop, checks the system state and executes decisions accordingly.
+ */
+void loop() {
+    if (state) {
+        Serial.println("System is running.");
+        system_decisions();
+    } else {
+        Serial.println("System is not running.");
         main_motors.stop();
-        main_motors.move_forward(10);
-        //move_mode = REVERSE_MOVE;
-    }
-    if(move_mode == REVERSE_MOVE)
-    {
-        Serial.println("Move mode: REVERSE_MOVE");
-        main_motors.set_speed(150);
-        main_motors.go_backward();
     }
 }
 
+/**
+ * @brief Executes the system's decision-making process based on sensor readings.
+ *        Manages line following and junction handling.
+ */
+void system_decisions() {
+    // Follow the line forward
+    line_track_forward();
+    Serial.println("Executing system decisions.");
 
+    // Block logic
+    tof_block_distance = tof_sensor.getDistance()-30;
+    //Pick up the block if it is sensed within threshold
+    if (tof_block_distance <= 40 && has_block == false){ 
+        pick_up_block();
+    }
 
+    // Check for junctions and handle them
+    if (get_line_state() >= 5) {
+       Serial.println("At junction.");
+       turn_junction(get_turn_direction());
+    }
+}
+
+void pick_up_block(){
+    main_motors.stop();
+    Claws.open();
+    main_motors.move_forward(80);
+    Claws.close();
+    main_motors.move_backward(80);  //This needs to be tested for lower numbers
+    has_block = true;
+    read_magnet_sensor();
+}
