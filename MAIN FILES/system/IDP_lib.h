@@ -440,14 +440,14 @@ void move_forward_tracking(int dist)
   main_motors.stop();
   int move_speed = 230;
   main_motors.set_speed(move_speed);
-  unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*max_wheel_speed );
+  unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*main_motors.max_wheel_speed );
   main_motors.go_forward();
   unsigned long move_forward_tracking_start = millis();
   while(millis() < move_forward_tracking_start + t)
   {
     line_track_forward(move_speed);
   }
-  stop();
+  main_motors.stop();
 }
 
 void interrupt_function()
