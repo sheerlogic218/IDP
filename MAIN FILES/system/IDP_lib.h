@@ -406,22 +406,22 @@ int get_line_state(){
 }
 
 void turn_left_until_line(){
-  main_motors.move_forward(15);
+  main_motors.move_backward(5);
   main_motors.set_MR_speed(230);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
   delay(50);
-  while (get_line_state() != 2);
+  while (get_line_state() != 1);
   main_motors.stop();
 }
 
 void turn_right_until_line(){
-  main_motors.move_forward(15);
+  main_motors.move_backward(5);
   main_motors.set_ML_speed(230);
   main_motors.set_MR_speed(0);
   main_motors.go_forward();
   delay(50);
-  while (get_line_state() != 3);
+  while (get_line_state() != 1);
   main_motors.stop();
 }
 
@@ -514,6 +514,7 @@ void line_track_forward() {
     Claws.open();
     main_motors.move_forward(50);
     Claws.close();
+    main_motors.move_backward(50);
     has_block = true;
     read_magnet_sensor();
   }
