@@ -263,11 +263,11 @@ class Servo_claws {
   int servo_time = 20;
   int min_angle = 10;
   int max_angle = 82;
-  int current_angle = 0;
-  int open_angle = 70;
+  int current_angle = min_angle;
+  int open_angle = 50;
   //sets the servos to their "0" point
   void go_zero(){
-    // for (int angle = current_angle; angle >= min_angle; angle -= 1){
+    for (int angle = current_angle; angle >= min_angle; angle -= 1){
     // //left has "0" at 270 due to being mirrored
     // left_servo.write(max_angle-angle);
     // right_servo.write(angle);
@@ -286,10 +286,13 @@ class Servo_claws {
     }
 
     current_angle = 0;
+    }
   }
+
   //turns the servos to a target angle relative to their "0"
   void steady_turn(int target_angle){
   if (target_angle<max_angle && target_angle > min_angle){
+
     // for (int angle = min_angle; angle <= target_angle; angle += 1){
     // //left has "0" at 270 due to being mirrored
     // left_servo.write(max_angle-angle);
@@ -308,8 +311,10 @@ class Servo_claws {
       left_servo.write(max_angle-angle);
       delay(servo_time);
     }
+
+
     current_angle = target_angle;
-  }
+    }
   }
   public:
   //means people cant mess up stuff by accessing turns directly
@@ -323,6 +328,7 @@ class Servo_claws {
   steady_turn(30);
   }
 };
+
 Servo_claws Claws;
 
 class LED_indicator{
@@ -501,15 +507,6 @@ void setup() {
   delay(500);
   leds.blue_blink();
   leds.red_blink();
-
-
-  //Claws.close();
-  delay(1500);
-  Claws.open();
-
-  delay(5000);
-  Claws.close();
-
 }
 
 
