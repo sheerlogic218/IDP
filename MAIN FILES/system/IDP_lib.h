@@ -6,6 +6,16 @@
 
 DFRobot_VL53L0X sensor;
 
+const byte hallPinLeft = A0; // AH3503 sensor connected to A0 5volt and ground
+const byte hallPinRight = A1; // AH3503 sensor connected to A0 5volt and ground
+const int offsetL = 500; // calibrate zero
+const int offsetR = 490; // calibrate zero
+const float span = 0.3617; // calibrate A/D > mT
+const float sensitivity = 3.125; // mV/Gauss
+float valueL, valueR;
+const int magnet_threshold = 30;
+int is_magnet = 0; // Magnetic is recyclable
+
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *main_motor_left  = AFMS.getMotor(1); //motor pin 1
 Adafruit_DCMotor *main_motor_right = AFMS.getMotor(2); //motor pin 2
@@ -257,7 +267,7 @@ class Servo_claws {
   int open_angle = 70;
   //sets the servos to their "0" point
   void go_zero(){
-    for (int angle = current_angle; angle >= 0; angle -= 1){
+    for (int angle = current_angle; angle >= min_angle; angle -= 1){
     //left has "0" at 270 due to being mirrored
     left_servo.write(max_angle-angle);
     right_servo.write(angle);
@@ -271,7 +281,7 @@ class Servo_claws {
   //turns the servos to a target angle relative to their "0"
   void steady_turn(int target_angle){
   if (target_angle<max_angle && target_angle > min_angle){
-    for (int angle = 0; angle <= target_angle; angle += 1){
+    for (int angle = min_angle; angle <= target_angle; angle += 1){
     //left has "0" at 270 due to being mirrored
     left_servo.write(max_angle-angle);
     right_servo.write(angle);
@@ -339,6 +349,7 @@ int rs_state = 0;
 int frs_state = 0;
 
 int tof_block_distance;
+bool has_block;
 
 
 int soft_turn_rate = 10;
@@ -350,10 +361,22 @@ void read_sensors(){
   ls_state = digitalRead(left_sensor);
   rs_state = digitalRead(right_sensor);
   frs_state = digitalRead(far_right_sensor);
-  tof_block_distance = sensor.getDistance()-20;
 }
 
-
+bool read_magnet_sensor(){
+  valueL = analogRead(hallPinLeft) - offsetL;
+  valueR = analogRead(hallPinRight) - offsetR;
+  Serial.print("Left Value: ");
+  Serial.print(valueL, 1);
+  Serial.print("    Right Value: ");
+  Serial.println(valueR, 1);
+  if ( (abs(valueL)+abs(valueR)) >= magnet_threshold ){
+    is_magnet = true;
+    return is_magnet;
+  }
+  is_magnet = false;
+  return is_magnet;
+}
 
 int get_line_state(){
   read_sensors();
@@ -379,41 +402,22 @@ int get_line_state(){
 }
 
 void turn_left_until_line(){
-  // main_motors.move_forward(80);
-  // main_motors.turn_left(100);
-  // // while (get_line_state() != 5){
-  // // delay(50);
-  // // }
-  // main_motors.turn_left(50);
-  // while (get_line_state() != 1){
-  // delay(50);
-  // }
-  // main_motors.stop();
-
   main_motors.move_forward(15);
   main_motors.set_MR_speed(230);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
-  while (get_line_state() != 1);
+  delay(50);
+  while (get_line_state() != 2);
   main_motors.stop();
 }
 
 void turn_right_until_line(){
-  // main_motors.move_forward(80);
-  // main_motors.turn_right(100);
-  // while (get_line_state() != 6){
-  // delay(50);
-  // }
-  // main_motors.turn_right(50);
-  // while (get_line_state() != 1){
-  // delay(50);
-  // }
-  // main_motors.stop();
   main_motors.move_forward(15);
   main_motors.set_ML_speed(230);
   main_motors.set_MR_speed(0);
   main_motors.go_forward();
-  while (get_line_state() != 1);
+  delay(50);
+  while (get_line_state() != 3);
   main_motors.stop();
 }
 
@@ -501,7 +505,12 @@ void line_track_forward() {
     Serial.println("Line tracking forward: Lost line, stopping.");
   }
 
-  if (tof_block_distance <= 80){ 
+  tof_block_distance = sensor.getDistance()-20;
+  if (tof_block_distance <= 30 && has_block == false){ 
     Claws.open();
+    main_motors.move_forward(50);
+    Claws.close();
+    has_block = true;
+    read_magnet_sensor();
   }
 }

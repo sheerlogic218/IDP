@@ -48,9 +48,6 @@ int move_mode = FORWARD_MOVE;   //start life by moving forward
 long last_turn_time = 0;
 long min_time_between_junctions = 2000; //SHOULDNT NEED TO EXIST, its a failsafe
 
-//CLAW Variables
-int claw_range = 100;   //Not used yet
-int is_magnet = 0; // Magnetic is recyclable
 
 // Junction function to handle the robot's movements at junctions
 void turn_junction(int turn_direction) {
@@ -189,7 +186,6 @@ void do_a_move()
     if(move_mode == REVERSE_MOVE)
     {
         Serial.println("Move mode: REVERSE_MOVE");
-        reverse_backward();
     }
 }
 
