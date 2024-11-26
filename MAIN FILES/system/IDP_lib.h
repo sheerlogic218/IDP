@@ -372,9 +372,13 @@ bool read_magnet_sensor(){
   Serial.println(valueR, 1);
   if ( (abs(valueL)+abs(valueR)) >= magnet_threshold ){
     is_magnet = true;
+    leds.blue_on();
+    leds.red_off();
     return is_magnet;
   }
   is_magnet = false;
+  leds.blue_off();
+  leds.red_on();
   return is_magnet;
 }
 
