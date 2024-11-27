@@ -53,7 +53,7 @@ int path[] = {
 // Special paths for different modes
 int special_path[][8] = {
     // Mode 0 - Going to the No Magnet, No chimney, landfill centre from the north-west
-    {STRAIGHT_ON, DROP_OFF_ANT ,RIGHT, RIGHT, LEFT, STRAIGHT_ON, EXPECT_BLOCK_ANT, SPECIAL_DONE},
+    {STRAIGHT_ON, DROP_OFF_ANT ,RIGHT, RIGHT, LEFT, EXPECT_BLOCK_ANT, STRAIGHT_ON, SPECIAL_DONE},
     // Mode 1 - Going to the Magnet, recycling chimney centre from the north-west
     {RIGHT, DROP_OFF_ANT, RIGHT , LEFT, SPECIAL_DONE},
     // Mode 2 - Going to the No Magnet centre from the north-east
