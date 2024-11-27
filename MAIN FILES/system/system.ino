@@ -12,7 +12,7 @@ const int LEFT_DROP_OFF                 = 9;
 const int TESTING                       = 10;
 const int LEGACY_LEFT                   = 11;
 const int LEGACY_RIGHT                  = 12;
-const int EXPECT_BLOCK_AFTER_NEXT  = 13;
+const int EXPECT_BLOCK_AFTER_NEXT       = 13;
 const int ROBOT_GO_WEE_WOO_AFTER_NEXT   = 14;   //I love you Bailen, pls allow it. I was laughing so so hard here.
 
 // Navigation variables
@@ -21,14 +21,15 @@ int special_mode = -1;
 int special_progress = 0;
 int distance_between_centre_junction_and_houses = 330;  //Will likely need tuning, may vary between houses
 long last_turn_time = 0;
-long min_time_between_junctions = 100;
+long min_time_between_junctions = 2000;
 bool block_expected = true;
+bool has_block = false;
 
 
 // Path array defining the robot's route
 int path[] = {
     // Move to the first block
-    LEFT,
+    TESTING,
     // Navigate to approperiate centre and end with the second block
     RIGHT, STRAIGHT_ON, RIGHT, EXPECT_BLOCK_AFTER_NEXT, SPECIAL_FROM_THE_LEFT, //Love how the first magical demonstration of EXPECT_BLOCK_AFTER_NEXT_TURN is in a special
     // Complete this loop again ready to gather the third block
@@ -58,7 +59,7 @@ int special_path[][5] = {
     // Mode 3 - Going to the Magnet centre from the north-west
     {STRAIGHT_ON, LEFT, RIGHT_DROP_OFF, LEFT, STOP},
     // Mode 4 - Testing routine, can be changed, is redundant. Prepared to test house wee_wooing
-    {LEFT, ROBOT_GO_WEE_WOO_AFTER_NEXT, LEFT, LEFT, STOP},
+    {LEFT, LEFT_DROP_OFF, LEFT, STOP, STOP},
 };
 
 /**
@@ -69,20 +70,25 @@ void drop_off()
 {
     Serial.println("Move mode: Drop Off Block");
     leds.blue_blink();
+    Serial.println("Moving forward to drop off block.");
     move_forward_tracking(50);
     delay(50);
+    Serial.println("Opening claws to release block.");
     Claws.open();
-    main_motors.move_backward(50);  //Cant track backwards due to sensor positioning.
-    main_motors.set_speed(150);
+    Serial.println("Moving backward after releasing block.");
+    main_motors.move_backward(50);  // Can't track backwards due to sensor positioning.
+    main_motors.set_speed(130);
+    Serial.println("Continuing to move backward until line is detected.");
     main_motors.go_backward();
     // Continue moving backward until a line is detected (at which point the line state is >= 5)
     while(get_line_state() < 5){
         leds.blue_blink();
     }
+    Serial.println("Line detected, stopping and closing claws.");
     Claws.close();
     leds.red_blink();
     main_motors.stop();
-    move_forward_tracking(10);
+    Serial.println("Drop off complete.");
 }
 
 /**
@@ -139,11 +145,13 @@ void turn_junction(int turn_direction) {
             break;
         case SPECIAL_FROM_THE_LEFT:
             // Navigate to approperiate centre from the north-west-most corner of the map headed to the middle.
+            read_magnet_sensor();
             special_mode = 0 + is_magnet;
             turn_junction(get_turn_direction());
             break;
         case SPECIAL_FROM_THE_RIGHT:
             // Navigate to approperiate centre from the north-east-most corner of the map headed to the middle.
+            read_magnet_sensor();
             special_mode = 2 + is_magnet;
             turn_junction(get_turn_direction());
             break;
@@ -163,6 +171,7 @@ void turn_junction(int turn_direction) {
         case EXPECT_BLOCK_AFTER_NEXT:
             //This should go before the turn command for the next junction
             block_expected = true;
+            last_turn_time = 0;
             turn_junction(get_turn_direction());
             break;
         case ROBOT_GO_WEE_WOO_AFTER_NEXT:
@@ -180,7 +189,7 @@ void turn_junction(int turn_direction) {
 }
 
 /**
- * @brief Determines the next turn direction for the robot based on the predetermined navigaton paths.
+ * @brief Determines the next turn direction for the robot based on the predetermined navigation paths.
  *
  * @return The value corresponding to the turn the robot will now perform.
  */
@@ -194,6 +203,7 @@ int get_turn_direction()
     // Failsafe for if we are trying to turn the same junction twice.
     if(last_turn_time + min_time_between_junctions > millis())
     {
+        Serial.println("Failsafe: Trying to turn the same junction twice.");
         progress--;
     }
 
@@ -209,6 +219,8 @@ int get_turn_direction()
     {
         // Use the next direction from the main path
         direction = path[progress];
+        Serial.print("Main path direction: ");
+        Serial.println(direction);
         progress++;
         last_turn_time = millis();
     }
@@ -216,6 +228,8 @@ int get_turn_direction()
     {
         // Use the next direction from the special path
         direction = special_path[special_mode][special_progress];
+        Serial.print("Special path direction: ");
+        Serial.println(direction);
         special_progress++;
         last_turn_time = millis();
 
@@ -235,10 +249,8 @@ int get_turn_direction()
  */
 void loop() {
     if (state) {
-        Serial.println("System is running.");
         system_decisions();
     } else {
-        Serial.println("System is not running.");
         main_motors.stop();
     }
 }
@@ -250,12 +262,10 @@ void loop() {
 void system_decisions() {
     // Follow the line forward
     line_track_forward();
-    Serial.println("Executing system decisions.");
-
-    // Block logic
+    //Block logic
     tof_block_distance = tof_sensor.getDistance()-30;
     //Pick up the block if it is sensed within threshold
-    if (tof_block_distance <= 40 && has_block == false && block_expected) //not sure how i feel about has_block, i suppose it prevents walls?
+    if (tof_block_distance <= 60 && has_block == false && block_expected)//40 //not sure how i feel about has_block, i suppose it prevents walls?
     { 
         pick_up_block();
     }
@@ -270,7 +280,7 @@ void system_decisions() {
 void setup()
 {
     IDP_setup();
-    main_motors.move_forward(50);
+    main_motors.move_forward(300);
 }
 
 //executes the pick_up_block() routine

@@ -132,9 +132,11 @@ class MainMotors {
   }
   // sends both motors forward -- verified
   void go_forward() {
-    //both motors forward
-    ML_run(FORWARD);
-    MR_run(FORWARD);
+    if(state) {
+      //both motors forward
+      ML_run(FORWARD);
+      MR_run(FORWARD);
+    }
   }
   // sends both motors backward -- verified
   void go_backward() {
@@ -231,53 +233,45 @@ class Servo_claws {
   //sets the servos to their "0" point
   void go_zero(){
     for (int angle = current_angle; angle >= min_angle; angle -= 1){
-    // //left has "0" at 270 due to being mirrored
-    // left_servo.write(max_angle-angle);
-    // right_servo.write(angle);
-    // Serial.print("Servo angle: ");
-    // Serial.println(angle);
-    // //controlls the speed of the servo rotations
-    // delay(servo_time);
-    // }
-    for (int angle = current_angle; angle >= min_angle; angle -=1 ){
-      left_servo.write(max_angle - angle);
-      delay(servo_time);
-    }
-    for (int angle = current_angle; angle >= min_angle; angle -=1 ){
+      //left has "0" at 270 due to being mirrored
+      left_servo.write(max_angle-angle);
       right_servo.write(angle);
+      //controlls the speed of the servo rotations
       delay(servo_time);
     }
+    // for (int angle = current_angle; angle >= min_angle; angle -=1 ){
+    //   left_servo.write(max_angle - angle);
+    //   delay(servo_time);
+    // }
+    // for (int angle = current_angle; angle >= min_angle; angle -=1 ){
+    //   right_servo.write(angle);
+    //   delay(servo_time);
+    // }
 
-    current_angle = 0;
-    }
+    current_angle = min_angle;
   }
+  
 
   //turns the servos to a target angle relative to their "0"
   void steady_turn(int target_angle){
-  if (target_angle<max_angle && target_angle > min_angle){
-
-    // for (int angle = min_angle; angle <= target_angle; angle += 1){
-    // //left has "0" at 270 due to being mirrored
-    // left_servo.write(max_angle-angle);
-    // right_servo.write(angle);
-    // Serial.print("Servo angle: ");
-    // Serial.println(angle);
-    // //controlls the speed of the servo rotations
-    // delay(servo_time);
-    // }
-
-    for (int angle = min_angle; angle <= target_angle; angle += 1){
-      right_servo.write(angle);
-      delay(servo_time);
-    }
-    for (int angle = min_angle; angle <= target_angle; angle += 1){
-      left_servo.write(max_angle-angle);
-      delay(servo_time);
-    }
-
-
-    current_angle = target_angle;
-    }
+    if (target_angle<max_angle && target_angle > min_angle){
+      for (int angle = min_angle; angle <= target_angle; angle += 1){
+        //left has "0" at 270 due to being mirrored
+        left_servo.write(max_angle-angle);
+        right_servo.write(angle);
+        //controlls the speed of the servo rotations
+        delay(servo_time);
+      }
+      // for (int angle = min_angle; angle <= target_angle; angle += 1){
+      //   right_servo.write(angle);
+      //   delay(servo_time);
+      // }
+      // for (int angle = min_angle; angle <= target_angle; angle += 1){
+      //   left_servo.write(max_angle-angle);
+      //   delay(servo_time);
+      // }
+      current_angle = target_angle;
+      }
   }
   public:
   //means people cant mess up stuff by accessing turns directly
@@ -336,7 +330,6 @@ int rs_state = 0;
 int frs_state = 0;
 
 int tof_block_distance = 1000;
-bool has_block = false;
 
 
 int soft_turn_rate = 10;
@@ -397,9 +390,9 @@ void turn_left_until_line(){
   main_motors.set_MR_speed(210);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
-  delay(50);
+  delay(300);
   while (get_line_state() != 1);
-  //delay(50);
+  delay(30);
   main_motors.stop();
 }
 
@@ -408,18 +401,18 @@ void turn_right_until_line(){
   main_motors.set_ML_speed(210);
   main_motors.set_MR_speed(0);
   main_motors.go_forward();
-  delay(50);
+  delay(300);
   while (get_line_state() != 1);
-  //delay(50);
+  delay(30);
   main_motors.stop();
 }
 
 // Function for line tracking forward
-void line_track_forward(int forward_speed = 230) {
+void line_track_forward() {
   read_line_sensors();
   // Test code for 4 sensor following
   if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-    main_motors.set_speed(forward_speed);
+    main_motors.set_speed(230);
     main_motors.go_forward();
   } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
     main_motors.change_MR_speed(12);
@@ -440,14 +433,14 @@ void line_track_forward(int forward_speed = 230) {
 void move_forward_tracking(int dist) 
 {  //New function, bailen pls fix if errors exist
   main_motors.stop();
-  int move_speed = 230;
+  int move_speed = 230; //MUST BE UNLESS YOU ALSO EDIT LINE TRACKING
   main_motors.set_speed(move_speed);
   unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*main_motors.max_wheel_speed );
   main_motors.go_forward();
   unsigned long move_forward_tracking_start = millis();
-  while(millis() < move_forward_tracking_start + t)
-  {
-    line_track_forward(move_speed);
+  while( millis() < move_forward_tracking_start + t ) {
+    leds.red_blink();
+    line_track_forward();
   }
   main_motors.stop();
 }
@@ -482,7 +475,7 @@ void IDP_setup() {
   left_servo.attach(9);
   right_servo.attach(10);
   Claws.close();
-  delay(1000);
+  delay(600);
 
   //sets up serial communication
   Serial.begin(9600);
@@ -514,9 +507,9 @@ void IDP_setup() {
   pinMode(led2pin, OUTPUT);
   //Can we remove delays in the setup
   leds.blue_on();
-  delay(500);
+  delay(200);
   leds.blue_off();
-  delay(500);
+  delay(200);
   leds.blue_blink();
   leds.red_blink();
 }
