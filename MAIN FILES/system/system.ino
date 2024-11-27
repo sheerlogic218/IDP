@@ -24,6 +24,7 @@ long last_turn_time = 0;
 long min_time_between_junctions = 2000;
 bool block_expected = true;
 bool has_block = false;
+bool at_start = true;
 
 
 // Path array defining the robot's route
@@ -242,6 +243,8 @@ int get_turn_direction()
             Serial.println("End of special path. Resetting special mode.");
             special_mode = -1;
             special_progress = 0;
+            last_turn_time = 0;
+            turn_junction(get_turn_direction());
         }
     }
     return direction;
@@ -264,7 +267,7 @@ void loop() {
  */
 void system_decisions() {
     // Follow the line forward
-    if (!has_block){
+    if (at_start){
         line_track_forward(150);
     } else{
     line_track_forward();
@@ -291,7 +294,6 @@ void setup()
     Serial.println("moving forward");
     main_motors.move_forward(200);
     Serial.println("done");
-    //leds.blue_blink();
 }
 
 //executes the pick_up_block() routine
@@ -303,6 +305,7 @@ void pick_up_block(){
     //This needs to be tested for lower numbers
     main_motors.move_backward(50);  
     has_block = true;
+    at_start = false;
     block_expected = false;
     read_magnet_sensor(); //updates is_magnet
 }
