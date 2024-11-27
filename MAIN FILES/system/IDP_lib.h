@@ -226,7 +226,7 @@ MainMotors main_motors; //create main motors object
 class Servo_claws {
   private:
   int servo_time = 20;
-  int min_angle = 8;
+  int min_angle = 4;
   int max_angle = 82;
   int current_angle = min_angle;
   int open_angle = 50;
@@ -420,11 +420,11 @@ void turn_right_until_line(){
 }
 
 // Function for line tracking forward
-void line_track_forward() {
+void line_track_forward(int follow_speed = 220 ) {
   read_line_sensors();
   // Test code for 4 sensor following
   if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-    main_motors.set_speed(220);
+    main_motors.set_speed(follow_speed);
     main_motors.go_forward();
   } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
     main_motors.change_MR_speed(15);

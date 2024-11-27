@@ -264,7 +264,11 @@ void loop() {
  */
 void system_decisions() {
     // Follow the line forward
+    if (!has_block){
+        line_track_forward(150);
+    } else{
     line_track_forward();
+    }
     //Block logic
     tof_block_distance = tof_sensor.getDistance();//-20;//30
     //Pick up the block if it is sensed within threshold
