@@ -526,9 +526,6 @@ void IDP_setup() {
   leds.red_blink();
 
   //main_motors.move_forward(300);
-
-
-
 }
 
 // CODE MOVEMENT
