@@ -21,7 +21,7 @@ int special_mode = -1;
 int special_progress = 0;
 int distance_between_centre_junction_and_houses = 330;  //Will likely need tuning, may vary between houses
 long last_turn_time = 0;
-long min_time_between_junctions = 2000;
+long min_time_between_junctions = 2000;     //BAILEN THE FAILSAFE IS ON, TEST HERE IF YOU WANT
 bool block_expected = true;
 bool has_block = false;
 
@@ -207,7 +207,14 @@ int get_turn_direction()
     if(last_turn_time + min_time_between_junctions > millis())
     {
         Serial.println("Failsafe: Trying to turn the same junction twice.");
-        progress--;
+        if(special_mode == -1)
+        {
+            progress--;
+        }
+        else
+        {
+            special_progress--;
+        }
     }
 
     // Failsafe for if we are past the end of the path.
@@ -242,6 +249,8 @@ int get_turn_direction()
             Serial.println("End of special path. Resetting special mode.");
             special_mode = -1;
             special_progress = 0;
+            last_turn_time = 0;
+            turn_junction(get_turn_direction());
         }
     }
     return direction;
