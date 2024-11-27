@@ -47,7 +47,7 @@ class MainMotors {
     float wheel_radius = 32.5; //mm
     int wheel_base = 170; //mm
     //max angular speed of wheel, radians per second
-    float max_wheel_angular_speed = 1.7*Pi;
+    float max_wheel_angular_speed = 1.55*Pi;
     //(5*360)/(5*2*Pi);
     //double wheel_angular_speed_100 = 0;
     float max_wheel_speed = max_wheel_angular_speed*wheel_radius; //max linear speed of wheel mm/s
@@ -226,7 +226,7 @@ MainMotors main_motors; //create main motors object
 class Servo_claws {
   private:
   int servo_time = 20;
-  int min_angle = 10;
+  int min_angle = 8;
   int max_angle = 82;
   int current_angle = min_angle;
   int open_angle = 50;
@@ -281,8 +281,8 @@ class Servo_claws {
   void close(){
   go_zero();
   }
-  void straight_ahead(){
-  steady_turn(30);
+  void wide_open(){
+  steady_turn(70);
   }
 };
 
@@ -386,24 +386,36 @@ int get_line_state(){
 }
 
 void turn_left_until_line(){
-  main_motors.move_backward(20);
+  main_motors.move_backward(13);
   main_motors.set_MR_speed(210);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
-  delay(300);
-  while (get_line_state() != 1);
-  delay(30);
+  Serial.println("starting turn");
+  delay(800);
+  while (get_line_state() != 1){
+    if(state);
+    else{
+      main_motors.stop();
+      break;}
+  }
+  delay(120);//90
   main_motors.stop();
+  Serial.println("finished turn");
 }
 
 void turn_right_until_line(){
-  main_motors.move_backward(20);
+  main_motors.move_backward(13);
   main_motors.set_ML_speed(210);
   main_motors.set_MR_speed(0);
   main_motors.go_forward();
-  delay(300);
-  while (get_line_state() != 1);
-  delay(30);
+  delay(800);
+  while (get_line_state() != 1){
+    if(state);
+    else{
+      main_motors.stop();
+      break;}
+  }
+  delay(120);
   main_motors.stop();
 }
 
@@ -412,13 +424,13 @@ void line_track_forward() {
   read_line_sensors();
   // Test code for 4 sensor following
   if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-    main_motors.set_speed(230);
+    main_motors.set_speed(220);
     main_motors.go_forward();
   } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
-    main_motors.change_MR_speed(12);
+    main_motors.change_MR_speed(15);
     main_motors.go_forward();
   } else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-    main_motors.change_ML_speed(12);
+    main_motors.change_ML_speed(15);
     main_motors.go_forward();
   } else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
     // Something went wrong
@@ -475,7 +487,7 @@ void IDP_setup() {
   left_servo.attach(9);
   right_servo.attach(10);
   Claws.close();
-  delay(600);
+  delay(300);
 
   //sets up serial communication
   Serial.begin(9600);
@@ -507,11 +519,16 @@ void IDP_setup() {
   pinMode(led2pin, OUTPUT);
   //Can we remove delays in the setup
   leds.blue_on();
-  delay(200);
+  delay(100);
   leds.blue_off();
-  delay(200);
+  delay(100);
   leds.blue_blink();
   leds.red_blink();
+
+  //main_motors.move_forward(300);
+
+
+
 }
 
 // CODE MOVEMENT

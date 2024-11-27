@@ -29,7 +29,8 @@ bool has_block = false;
 // Path array defining the robot's route
 int path[] = {
     // Move to the first block
-    TESTING,
+    //TESTING,
+    LEFT,
     // Navigate to approperiate centre and end with the second block
     RIGHT, STRAIGHT_ON, RIGHT, EXPECT_BLOCK_AFTER_NEXT, SPECIAL_FROM_THE_LEFT, //Love how the first magical demonstration of EXPECT_BLOCK_AFTER_NEXT_TURN is in a special
     // Complete this loop again ready to gather the third block
@@ -76,8 +77,10 @@ void drop_off()
     Serial.println("Opening claws to release block.");
     Claws.open();
     Serial.println("Moving backward after releasing block.");
-    main_motors.move_backward(50);  // Can't track backwards due to sensor positioning.
-    main_motors.set_speed(130);
+    main_motors.move_backward(100);
+    Claws.close();
+    // Can't track backwards due to sensor positioning.
+    main_motors.set_speed(180);
     Serial.println("Continuing to move backward until line is detected.");
     main_motors.go_backward();
     // Continue moving backward until a line is detected (at which point the line state is >= 5)
@@ -85,7 +88,7 @@ void drop_off()
         leds.blue_blink();
     }
     Serial.println("Line detected, stopping and closing claws.");
-    Claws.close();
+    //Claws.close();
     leds.red_blink();
     main_motors.stop();
     Serial.println("Drop off complete.");
@@ -263,7 +266,7 @@ void system_decisions() {
     // Follow the line forward
     line_track_forward();
     //Block logic
-    tof_block_distance = tof_sensor.getDistance()-30;
+    tof_block_distance = tof_sensor.getDistance();//-20;//30
     //Pick up the block if it is sensed within threshold
     if (tof_block_distance <= 60 && has_block == false && block_expected)//40 //not sure how i feel about has_block, i suppose it prevents walls?
     { 
@@ -280,17 +283,21 @@ void system_decisions() {
 void setup()
 {
     IDP_setup();
-    main_motors.move_forward(300);
+    //leds.blue_blink();
+    Serial.println("moving forward");
+    main_motors.move_forward(200);
+    Serial.println("done");
+    //leds.blue_blink();
 }
 
 //executes the pick_up_block() routine
 void pick_up_block(){
-    main_motors.stop();
+    main_motors.move_backward(10);
     Claws.open();
-    main_motors.move_forward(80);
+    main_motors.move_forward(100);
     Claws.close();
     //This needs to be tested for lower numbers
-    main_motors.move_backward(80);  
+    main_motors.move_backward(50);  
     has_block = true;
     block_expected = false;
     read_magnet_sensor(); //updates is_magnet
