@@ -14,7 +14,7 @@ const float span = 0.3617; // calibrate A/D > mT
 const float sensitivity = 3.125; // mV/Gauss
 float valueL, valueR;
 const int magnet_threshold = 30;
-int is_magnet = 0; // Magnetic is recyclable
+int is_magnet = 0; // Magnetic is recyclable is centre with chimmney
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *main_motor_left  = AFMS.getMotor(1); //motor pin 1
@@ -137,6 +137,7 @@ class MainMotors {
       ML_run(FORWARD);
       MR_run(FORWARD);
     }
+    else { stop(); }
   }
   // sends both motors backward -- verified
   void go_backward() {
@@ -151,13 +152,6 @@ class MainMotors {
     main_motor_left->run(RELEASE);
     main_motor_right->run(RELEASE);
   }
-  //test function to allow for faster stops -- unverified
-  // void hard_stop() {
-  //   //cuts forward power and brakes both motors
-  //   set_speed(0);
-  //   main_motor_left->run(BRAKE);
-  //   main_motor_right->run(BRAKE);
-  // }
   //simple turn functions -- verified
   void turn_left(int speed) {
     set_speed(speed);
@@ -301,6 +295,16 @@ class LED_indicator{
     delay(50);
     blue_off();
   }
+  void blue_blink_async(){
+    if(millis() % 100 < 50)
+    {
+      blue_on();
+    }
+    else
+    {
+      blue_off();
+    }
+  }
 
   void red_on(){
     digitalWrite(led2pin, HIGH);
@@ -313,7 +317,16 @@ class LED_indicator{
     delay(50);
     red_off();
   }
-  
+  void red_blink_async(){
+    if(millis() % 100 < 50)
+    {
+      blue_on();
+    }
+    else
+    {
+      blue_off();
+    }
+  }
 };
 LED_indicator leds;
 
@@ -330,8 +343,6 @@ int rs_state = 0;
 int frs_state = 0;
 
 int tof_block_distance = 1000;
-
-
 int soft_turn_rate = 10;
 
 //function to read data from the sensors
@@ -442,17 +453,16 @@ void line_track_forward(int follow_speed = 220 ) {
 }
 
 //Less accurate distance than regular move_forward due to turning, 
-void move_forward_tracking(int dist) 
+void move_forward_tracking(int dist, int move_speed = 230) 
 {  //New function, bailen pls fix if errors exist
   main_motors.stop();
-  int move_speed = 230; //MUST BE UNLESS YOU ALSO EDIT LINE TRACKING
   main_motors.set_speed(move_speed);
+  //I think the maths below is incorrect since the speed is nonlinear with power, good simple version
   unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*main_motors.max_wheel_speed );
   main_motors.go_forward();
   unsigned long move_forward_tracking_start = millis();
   while( millis() < move_forward_tracking_start + t ) {
-    leds.red_blink();
-    line_track_forward();
+    line_track_forward(move_speed);
   }
   main_motors.stop();
 }
@@ -468,7 +478,7 @@ void interrupt_function()
 }
 
 void IDP_setup() {
-
+  leds.blue_on();
   //stops motors straight away
   if (AFMS.begin()){
     Serial.println("AFMS connected");
@@ -480,8 +490,10 @@ void IDP_setup() {
   main_motors.stop();
 
   //waits for button press to start program
+  leds.red_on();
   pinMode(3,INPUT);
   while ( !digitalRead(3) );
+  leds.red_off();
 
   //sets up the servo pins and holds at "0"
   left_servo.attach(9);
@@ -517,15 +529,9 @@ void IDP_setup() {
   //LED
   pinMode(led1pin, OUTPUT);
   pinMode(led2pin, OUTPUT);
-  //Can we remove delays in the setup
-  leds.blue_on();
-  delay(100);
-  leds.blue_off();
-  delay(100);
-  leds.blue_blink();
-  leds.red_blink();
 
-  //main_motors.move_forward(300);
+  leds.blue_off();
+  //Bailen ill change back the LEDS but i assumed the blinking was cool and we want cool, so i made it cool and data informative ish.
 }
 
 // CODE MOVEMENT
