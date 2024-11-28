@@ -24,8 +24,9 @@ Servo left_servo;
 Servo right_servo;
 
 //setup for leds
-int led1pin = 11;
-int led2pin = 8;
+int led1pin = 2;   //red
+int led2pin = 8;   //green
+int led3pin = 11;    //blue
 
 volatile byte state = LOW;
 
@@ -284,33 +285,11 @@ Servo_claws Claws;
 
 class LED_indicator{
   public:
-  void blue_on(){
+  void red_on(){
     digitalWrite(led1pin, HIGH);
   }
-  void blue_off(){
-    digitalWrite(led1pin, LOW);
-  }
-  void blue_blink(){
-    blue_on();
-    delay(50);
-    blue_off();
-  }
-  void blue_blink_async(){
-    if(millis() % 500 < 250)
-    {
-      blue_on();
-    }
-    else
-    {
-      blue_off();
-    }
-  }
-
-  void red_on(){
-    digitalWrite(led2pin, HIGH);
-  }
   void red_off(){
-    digitalWrite(led2pin, LOW);
+    digitalWrite(led1pin, LOW);
   }
   void red_blink(){
     red_on();
@@ -318,6 +297,50 @@ class LED_indicator{
     red_off();
   }
   void red_blink_async(){
+    if(millis() % 500 < 250)
+    {
+      red_on();
+    }
+    else
+    {
+      red_off();
+    }
+  }
+
+  void green_on(){
+    digitalWrite(led2pin, HIGH);
+  }
+  void green_off(){
+    digitalWrite(led2pin, LOW);
+  }
+  void green_blink(){
+    green_on();
+    delay(50);
+    green_off();
+  }
+  void green_blink_async(){
+    if(millis() % 500 < 250)
+    {
+      green_on();
+    }
+    else
+    {
+      green_off();
+    }
+  }
+
+  void blue_on(){
+    digitalWrite(led3pin, HIGH);
+  }
+  void blue_off(){
+    digitalWrite(led3pin, LOW);
+  }
+  void blue_blink(){
+    blue_on();
+    delay(50);
+    blue_off();
+  }
+  void blue_blink_async(){
     if(millis() % 500 < 250)
     {
       blue_on();
@@ -363,8 +386,8 @@ bool read_magnet_sensor(){
   Serial.println(valueR, 1);
   if ( (abs(valueL)+abs(valueR)) >= magnet_threshold ){
     is_magnet = true;
-    leds.blue_off();
-    leds.red_on();
+    leds.green_blink();
+    leds.red_off();
     return is_magnet;
   }
   // is_magnet = false;
@@ -404,8 +427,8 @@ void turn_left_until_line(){
   Serial.println("starting turn");
   delay(800);
   while (get_line_state() != 1){
-    if(state);
     leds.blue_blink_async();
+    if(state);
     else{
       main_motors.stop();
       break;}
@@ -422,8 +445,8 @@ void turn_right_until_line(){
   main_motors.go_forward();
   delay(800);
   while (get_line_state() != 1){
-    if(state);
     leds.blue_blink_async();
+    if(state);
     else{
       main_motors.stop();
       break;}
@@ -532,6 +555,7 @@ void IDP_setup() {
   //LED
   pinMode(led1pin, OUTPUT);
   pinMode(led2pin, OUTPUT);
+  pinMode(led3pin, OUTPUT);
 
   leds.blue_off();
   //Bailen ill change back the LEDS but i assumed the blinking was cool and we want cool, so i made it cool and data informative ish.

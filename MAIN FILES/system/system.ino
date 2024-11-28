@@ -220,7 +220,7 @@ void drop_off()
     main_motors.go_backward();
     // Continue moving backward until a line is detected (at which point the line state is >= 5)
     while(get_line_state() < 5){
-        leds.blue_blink();
+        //leds.blue_blink();
     }
     Serial.println("Line detected, stopping and closing claws.");
     //Claws.close();
@@ -237,14 +237,14 @@ void drop_off()
 void grab_from_nook()
 {
     Serial.println("Move mode: Praying grab from the nook works");
-    leds.red_on();  //idk what red means, might be being naughty for doing this but i want red.
+    //leds.red_on();  //idk what red means, might be being naughty for doing this but i want red.
     pick_up_block();
     main_motors.go_backward();
     // Continue moving backward until a line is detected (at which point the line state is >= 5)
     while(get_line_state() < 5){
         leds.blue_blink_async();    //If there is a bug here its async
     }
-    leds.red_blink();
+    //leds.red_blink();
     read_magnet_sensor();   //LEDS must be updated
     main_motors.stop();
     main_motors.move_forward(10);
@@ -262,8 +262,8 @@ void pick_up_block(){
     block_expected = false;
     //assume no magnet
     is_magnet = false;
-    leds.blue_on();
-    leds.red_off();
+    leds.red_on();
+    leds.blue_off();
     is_magnet = false;
 
     //check if we are wrong
