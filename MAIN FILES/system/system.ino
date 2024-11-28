@@ -24,7 +24,7 @@ bool has_block = false;
 
 //CONFIGURATION VARIABLES
 long min_time_between_junctions = 750;                 //Failsafe parameter
-int distance_between_centre_junction_and_houses = 330;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
+int distance_between_centre_junction_and_houses = 150;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int block_approach_speed = 130;
 int default_travel_speed = 220;
 
@@ -133,27 +133,29 @@ int get_turn_direction()
  * @param turn_direction The direction the robot should turn at the junction, obtained from get_turn_direction()
  */
 void turn_junction(int turn_direction) {
-
-    Serial.print("Running turn of direction: ");
-    Serial.println(turn_direction);
     iterate_respective_progress(1);     //This is because we will now complete this turn (or find out and undo this assumption)
 
     switch (turn_direction) {
         case STRAIGHT_ON:
+            Serial.println("Turn direction: STRAIGHT_ON");
             move_forward_tracking(30);            // Move forward through the junction.
             break;
         case RIGHT:
+            Serial.println("Turn direction: RIGHT");
             turn_right_until_line();              // Turn right at the junction
             break;
         case LEFT:
+            Serial.println("Turn direction: LEFT");
             turn_left_until_line();               // Turn left at the junction
             break;
         case TESTING:
+            Serial.println("Turn direction: TESTING");
             // Enter testing mode, this is redundant and will be removed soon.
             special_mode = 4;
             turn_junction(get_turn_direction());
             break;
         case SPECIAL_FROM_THE_LEFT:
+            Serial.println("Turn direction: SPECIAL_FROM_THE_LEFT");
             // Navigate to approperiate centre from the north-west-most corner of the map headed to the middle.
             read_magnet_sensor();
             special_mode = 0 + is_magnet;
@@ -161,30 +163,29 @@ void turn_junction(int turn_direction) {
             //Leaves the code with the next main direction as the next one and has just set off first special mode
             break;
         case SPECIAL_FROM_THE_RIGHT:
+            Serial.println("Turn direction: SPECIAL_FROM_THE_RIGHT");
             // Navigate to approperiate centre from the north-east-most corner of the map headed to the middle.
             read_magnet_sensor();
             special_mode = 2 + is_magnet;
             turn_junction(get_turn_direction());
             //Leaves the code with the next main direction as the next one and has just set off first special mode
             break;
-        case DROP_OFF_ANT:      //Curious how we can boost reliability + add verifications here, maybe ill embed more into the function
+        case DROP_OFF_ANT:
+            Serial.println("Turn direction: DROP_OFF_ANT");
             // Deposit block into the centre after turning right
             turn_junction(get_turn_direction());    //Drop off needs to do this turn now
-            Serial.println("Drop off turn complete.");
             drop_off();
-            Serial.println("Drop off");
             turn_junction(get_turn_direction());
-            Serial.println("end of drop off system.");
             break;
         case EXPECT_BLOCK_ANT:
-            Serial.println("Expect block.");
+            Serial.println("Turn direction: EXPECT_BLOCK_ANT");
             //This should go before the turn command for the next junction
             turn_junction(get_turn_direction());
             block_expected = true;
             break;
         case ROBOT_GO_WEE_WOO_ANT:
+            Serial.println("Turn direction: ROBOT_GO_WEE_WOO_ANT");
             //This is the finding the block in the nooks
-            Serial.println("WEE WOO.");
             turn_junction(get_turn_direction());
             move_forward_tracking(distance_between_centre_junction_and_houses);
             main_motors.turn_90_right();    //Means it always needs to go in a specific way.
@@ -192,17 +193,24 @@ void turn_junction(int turn_direction) {
             turn_junction(get_turn_direction());
             break;
         case SPECIAL_DONE:
+            Serial.println("Turn direction: SPECIAL_DONE");
             Serial.println("End of special path. Resetting special mode.");
             special_mode = -1;
             special_progress = 0;
             turn_junction(get_turn_direction());
             break;
         case COMPLETED_ANT:
+            Serial.println("Turn direction: COMPLETED_ANT");
             turn_junction(get_turn_direction());
             main_motors.stop();
             while(true);
             break;
         default:
+            Serial.println("Turn direction: INVALID");
+            // Stop the robot for invalid direction
+            main_motors.stop();
+            break;
+    }
             // Stop the robot for invalid direction
             main_motors.stop();
             break;
