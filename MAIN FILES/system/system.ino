@@ -11,7 +11,7 @@ const int TESTING                       = 6;
 const int DROP_OFF_ANT                  = 7;   //ANT MEANS After Next Turn
 const int EXPECT_BLOCK_ANT              = 8;   //These are a couple of methods that setup the system to perform things on paths
 const int ROBOT_GO_WEE_WOO_ANT          = 9;   //These things are meant to be done during navigation but called after a junction
-const int COMPLETED                     = 10;
+const int COMPLETED_ANT                 = 10;
 
 // Navigation variables
 int progress = 0;
@@ -42,12 +42,12 @@ int path[] = {
     RIGHT, LEFT, LEFT, EXPECT_BLOCK_ANT, STRAIGHT_ON,
     // Recycle the fourth block
     LEFT, STRAIGHT_ON, LEFT, SPECIAL_FROM_THE_RIGHT,
-    // Handle hidden block on this road - not tested this far quite yet
-    ROBOT_GO_WEE_WOO_ANT, LEFT, LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
-    // Handle final hidden block
-    LEFT, RIGHT, RIGHT, ROBOT_GO_WEE_WOO_ANT, STRAIGHT_ON, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_RIGHT,
+    // // Handle hidden block on this road - not tested this far quite yet
+    // ROBOT_GO_WEE_WOO_ANT, LEFT, LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
+    // // Handle final hidden block
+    // LEFT, RIGHT, RIGHT, ROBOT_GO_WEE_WOO_ANT, STRAIGHT_ON, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_RIGHT,
     // End of path - this just returns it to its starting point as a show off move.
-    LEFT, RIGHT, RIGHT, LEFT, COMPLETED  //My cravings to try and make the lobster ram into the house are unparalelled, I think it would be funny.
+    LEFT, RIGHT, RIGHT, LEFT, COMPLETED_ANT ,STRAIGHT_ON  //My cravings to try and make the lobster ram into the house are unparalelled, I think it would be funny.
 };
 
 // Special paths for different modes
@@ -189,6 +189,11 @@ void turn_junction(int turn_direction) {
             special_mode = -1;
             special_progress = 0;
             turn_junction(get_turn_direction());
+            break;
+        case COMPLETED_ANT:
+            turn_junction(get_turn_direction());
+            main_motors.stop();
+            while(true);
             break;
         default:
             // Stop the robot for invalid direction
