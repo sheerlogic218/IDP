@@ -25,7 +25,7 @@ bool has_block = false;
 //CONFIGURATION VARIABLES
 long min_time_between_junctions = 2000;                 //Failsafe parameter
 int distance_between_centre_junction_and_houses = 330;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
-int block_approach_speed = 150;
+int block_approach_speed = 130;
 int default_travel_speed = 220;
 
 // Path array defining the robot's route
@@ -232,6 +232,7 @@ void drop_off()
     //Claws.close();
     leds.red_blink();
     main_motors.stop();
+    main_motors.move_forward(10);
     Serial.println("Drop off complete.");
 }
 

@@ -24,8 +24,8 @@ Servo left_servo;
 Servo right_servo;
 
 //setup for leds
-int led1pin = 2;   //red
-int led2pin = 8;   //green
+int led1pin = 8;   //red
+int led2pin = 2;   //green
 int led3pin = 11;    //blue
 
 volatile byte state = LOW;
@@ -505,6 +505,7 @@ void interrupt_function()
 
 void IDP_setup() {
   leds.blue_on();
+  leds.green_on();
   //stops motors straight away
   if (AFMS.begin()){
     Serial.println("AFMS connected");
