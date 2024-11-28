@@ -12,6 +12,7 @@ const int DROP_OFF_ANT                  = 7;   //ANT MEANS After Next Turn
 const int EXPECT_BLOCK_ANT              = 8;   //These are a couple of methods that setup the system to perform things on paths
 const int ROBOT_GO_WEE_WOO_ANT          = 9;   //These things are meant to be done during navigation but called after a junction
 const int COMPLETED_ANT                 = 10;
+const int COMPLETED                     = 11;
 
 // Navigation variables
 int progress = 0;
