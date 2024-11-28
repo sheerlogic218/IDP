@@ -141,10 +141,10 @@ void turn_junction(int turn_direction) {
             move_forward_tracking(30);            // Move forward through the junction.
             break;
         case RIGHT:
-            turn_right_until_line();                        // Turn right at the junction
+            turn_right_until_line();              // Turn right at the junction
             break;
         case LEFT:
-            turn_left_until_line();            // Turn left at the junction
+            turn_left_until_line();               // Turn left at the junction
             break;
         case TESTING:
             // Enter testing mode, this is redundant and will be removed soon.
@@ -254,12 +254,19 @@ void grab_from_nook()
 void pick_up_block(){
     main_motors.move_backward(10);
     Claws.open();
-    main_motors.move_forward(100);
+    main_motors.move_forward(200);
     Claws.close();
     //This needs to be tested for lower numbers
     main_motors.move_backward(50);  
     has_block = true;
     block_expected = false;
+    //assume no magnet
+    is_magnet = false;
+    leds.blue_on();
+    leds.red_off();
+    is_magnet = false;
+
+    //check if we are wrong
     read_magnet_sensor(); //updates is_magnet
 }
 

@@ -296,7 +296,7 @@ class LED_indicator{
     blue_off();
   }
   void blue_blink_async(){
-    if(millis() % 100 < 50)
+    if(millis() % 500 < 250)
     {
       blue_on();
     }
@@ -318,7 +318,7 @@ class LED_indicator{
     red_off();
   }
   void red_blink_async(){
-    if(millis() % 100 < 50)
+    if(millis() % 500 < 250)
     {
       blue_on();
     }
@@ -363,13 +363,13 @@ bool read_magnet_sensor(){
   Serial.println(valueR, 1);
   if ( (abs(valueL)+abs(valueR)) >= magnet_threshold ){
     is_magnet = true;
-    leds.blue_on();
-    leds.red_off();
+    leds.blue_off();
+    leds.red_on();
     return is_magnet;
   }
-  is_magnet = false;
-  leds.blue_off();
-  leds.red_on();
+  // is_magnet = false;
+  // leds.blue_off();
+  // leds.red_on();
   return is_magnet;
 }
 
@@ -405,6 +405,7 @@ void turn_left_until_line(){
   delay(800);
   while (get_line_state() != 1){
     if(state);
+    leds.blue_blink_async();
     else{
       main_motors.stop();
       break;}
@@ -422,6 +423,7 @@ void turn_right_until_line(){
   delay(800);
   while (get_line_state() != 1){
     if(state);
+    leds.blue_blink_async();
     else{
       main_motors.stop();
       break;}
@@ -433,6 +435,7 @@ void turn_right_until_line(){
 // Function for line tracking forward
 void line_track_forward(int follow_speed = 220 ) {
   read_line_sensors();
+  leds.blue_blink_async();
   // Test code for 4 sensor following
   if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
     main_motors.set_speed(follow_speed);
