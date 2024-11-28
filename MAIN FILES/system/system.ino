@@ -10,9 +10,10 @@ const int SPECIAL_DONE                  = 5;
 const int TESTING                       = 6;
 const int DROP_OFF_ANT                  = 7;   //ANT MEANS After Next Turn
 const int EXPECT_BLOCK_ANT              = 8;   //These are a couple of methods that setup the system to perform things on paths
-const int ROBOT_GO_WEE_WOO_ANT          = 9;   //These things are meant to be done during navigation but called after a junction
-const int COMPLETED_ANT                 = 10;
-const int COMPLETED                     = 11;
+const int ROBOT_GO_WEE_WOO_ANT_FIRST    = 9;   //These things are meant to be done during navigation but called after a junction
+const int ROBOT_GO_WEE_WOO_ANT_SECND    = 10;   //These things are meant to be done during navigation but called after a junction
+const int COMPLETED_ANT                 = 11;
+
 
 // Navigation variables
 int progress = 0;
@@ -24,9 +25,11 @@ bool has_block = false;
 
 //CONFIGURATION VARIABLES
 long min_time_between_junctions = 750;                 //Failsafe parameter
-int distance_between_centre_junction_and_houses = 150;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
+int distance_between_centre_junction_and_houses_FIRST = 150;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
+int distance_between_centre_junction_and_houses_SECOND = 150;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int block_approach_speed = 130;
 int default_travel_speed = 220;
+int amount_to_go_forward_at_the_end = 300;
 
 // Path array defining the robot's route
 int path[] = {
@@ -44,9 +47,9 @@ int path[] = {
     // Recycle the fourth block
     LEFT, STRAIGHT_ON, LEFT, SPECIAL_FROM_THE_RIGHT,
     // Handle hidden block on this road - not tested this far quite yet
-    ROBOT_GO_WEE_WOO_ANT, LEFT, LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
+    ROBOT_GO_WEE_WOO_ANT_FIRST, LEFT, LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
     // Handle final hidden block
-    LEFT, RIGHT, RIGHT, ROBOT_GO_WEE_WOO_ANT, STRAIGHT_ON, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,
+    LEFT, RIGHT, RIGHT, ROBOT_GO_WEE_WOO_ANT_SECND, STRAIGHT_ON, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,
     // End of path - this just returns it to its starting point as a show off move.
     LEFT, RIGHT, RIGHT, LEFT, COMPLETED_ANT ,STRAIGHT_ON  //My cravings to try and make the lobster ram into the house are unparalelled, I think it would be funny.
 };
@@ -56,7 +59,7 @@ int special_path[][8] = {
     // Mode 0 - Going to the No Magnet, No chimney, landfill centre from the north-west
     {STRAIGHT_ON, DROP_OFF_ANT ,RIGHT, RIGHT, LEFT, EXPECT_BLOCK_ANT, STRAIGHT_ON, SPECIAL_DONE},
     // Mode 1 - Going to the Magnet, recycling chimney centre from the north-west
-    {RIGHT, DROP_OFF_ANT, RIGHT , LEFT, SPECIAL_DONE},
+    {RIGHT, DROP_OFF_ANT, RIGHT , EXPECT_BLOCK_ANT, LEFT, SPECIAL_DONE},
     // Mode 2 - Going to the No Magnet centre from the north-east
     {DROP_OFF_ANT, LEFT, RIGHT, LEFT, STRAIGHT_ON, SPECIAL_DONE},
     // Mode 3 - Going to the Magnet centre from the north-west
@@ -184,11 +187,20 @@ void turn_junction(int turn_direction) {
             turn_junction(get_turn_direction());
             block_expected = true;
             break;
-        case ROBOT_GO_WEE_WOO_ANT:
+        case ROBOT_GO_WEE_WOO_ANT_FIRST:
             Serial.println("Turn direction: ROBOT_GO_WEE_WOO_ANT");
             //This is the finding the block in the nooks
             turn_junction(get_turn_direction());
-            move_forward_tracking(distance_between_centre_junction_and_houses);
+            move_forward_tracking(distance_between_centre_junction_and_houses_FIRST_HOUSE);
+            main_motors.turn_90_right();    //Means it always needs to go in a specific way.
+            grab_from_nook();
+            turn_junction(get_turn_direction());
+            break;
+        case ROBOT_GO_WEE_WOO_ANT_SECND:
+            Serial.println("Turn direction: ROBOT_GO_WEE_WOO_ANT");
+            //This is the finding the block in the nooks
+            turn_junction(get_turn_direction());
+            move_forward_tracking(distance_between_centre_junction_and_houses_SECOND_HOUSE);
             main_motors.turn_90_right();    //Means it always needs to go in a specific way.
             grab_from_nook();
             turn_junction(get_turn_direction());
@@ -203,6 +215,7 @@ void turn_junction(int turn_direction) {
         case COMPLETED_ANT:
             Serial.println("Turn direction: COMPLETED_ANT");
             turn_junction(get_turn_direction());
+            main_motors.move_forward(amount_to_go_forward_at_the_end);
             main_motors.stop();
             while(true);
             break;
@@ -331,6 +344,7 @@ void system_decisions() {
 
     // Check for junctions and handle them
     if (get_line_state() >= 5) {
+        block_expected = false;                 //POTENTIAL DEBUG POINT
         turn_junction(get_turn_direction());
         //Once the turn junction command has completely finished we restart the timer,
         // so if it thinks its on the line quickly after it'll get picked up on.
