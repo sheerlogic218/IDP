@@ -386,7 +386,7 @@ bool read_magnet_sensor(){
   Serial.println(valueR, 1);
   if ( (abs(valueL)+abs(valueR)) >= magnet_threshold ){
     is_magnet = true;
-    leds.green_blink();
+    leds.green_on();
     leds.red_off();
     return is_magnet;
   }
@@ -420,7 +420,7 @@ int get_line_state(){
 }
 
 void turn_left_until_line(){
-  main_motors.move_backward(13);
+  main_motors.move_backward(12);
   main_motors.set_MR_speed(210);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
@@ -439,7 +439,7 @@ void turn_left_until_line(){
 }
 
 void turn_right_until_line(){
-  main_motors.move_backward(13);
+  main_motors.move_backward(12);
   main_motors.set_ML_speed(210);
   main_motors.set_MR_speed(0);
   main_motors.go_forward();
@@ -505,7 +505,7 @@ void interrupt_function()
 
 void IDP_setup() {
   leds.blue_on();
-  leds.green_on();
+
   //stops motors straight away
   if (AFMS.begin()){
     Serial.println("AFMS connected");

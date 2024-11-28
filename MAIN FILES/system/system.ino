@@ -23,7 +23,7 @@ bool block_expected = true;
 bool has_block = false;
 
 //CONFIGURATION VARIABLES
-long min_time_between_junctions = 2000;                 //Failsafe parameter
+long min_time_between_junctions = 750;                 //Failsafe parameter
 int distance_between_centre_junction_and_houses = 330;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int block_approach_speed = 130;
 int default_travel_speed = 220;
@@ -43,10 +43,10 @@ int path[] = {
     RIGHT, LEFT, LEFT, EXPECT_BLOCK_ANT, STRAIGHT_ON,
     // Recycle the fourth block
     LEFT, STRAIGHT_ON, LEFT, SPECIAL_FROM_THE_RIGHT,
-    // // Handle hidden block on this road - not tested this far quite yet
-    // ROBOT_GO_WEE_WOO_ANT, LEFT, LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
-    // // Handle final hidden block
-    // LEFT, RIGHT, RIGHT, ROBOT_GO_WEE_WOO_ANT, STRAIGHT_ON, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_RIGHT,
+    // Handle hidden block on this road - not tested this far quite yet
+    ROBOT_GO_WEE_WOO_ANT, LEFT, LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
+    // Handle final hidden block
+    LEFT, RIGHT, RIGHT, ROBOT_GO_WEE_WOO_ANT, STRAIGHT_ON, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_RIGHT,
     // End of path - this just returns it to its starting point as a show off move.
     LEFT, RIGHT, RIGHT, LEFT, COMPLETED_ANT ,STRAIGHT_ON  //My cravings to try and make the lobster ram into the house are unparalelled, I think it would be funny.
 };
@@ -76,7 +76,7 @@ void iterate_respective_progress(int amount = 1)
     {
         Serial.print("Current navigation progress (main): ");
         Serial.println(progress);
-        progress += amount;
+        progress = progress + amount;
     }
     else
     {
@@ -84,7 +84,7 @@ void iterate_respective_progress(int amount = 1)
         Serial.println(special_progress);
         Serial.print("Current special mode: ");
         Serial.println(special_mode);
-        special_progress += amount;
+        special_progress = special_progress + amount;
     }
 }
 
@@ -124,8 +124,6 @@ int get_turn_direction()
         direction = special_path[special_mode][special_progress];
         
     }
-    Serial.print("Planning turn of direction: ");
-    Serial.println(direction);
     return direction;
 }
 
@@ -135,6 +133,9 @@ int get_turn_direction()
  * @param turn_direction The direction the robot should turn at the junction, obtained from get_turn_direction()
  */
 void turn_junction(int turn_direction) {
+
+    Serial.print("Running turn of direction: ");
+    Serial.println(turn_direction);
     iterate_respective_progress(1);     //This is because we will now complete this turn (or find out and undo this assumption)
 
     switch (turn_direction) {
@@ -169,16 +170,21 @@ void turn_junction(int turn_direction) {
         case DROP_OFF_ANT:      //Curious how we can boost reliability + add verifications here, maybe ill embed more into the function
             // Deposit block into the centre after turning right
             turn_junction(get_turn_direction());    //Drop off needs to do this turn now
+            Serial.println("Drop off turn complete.");
             drop_off();
+            Serial.println("Drop off");
             turn_junction(get_turn_direction());
+            Serial.println("end of drop off system.");
             break;
         case EXPECT_BLOCK_ANT:
+            Serial.println("Expect block.");
             //This should go before the turn command for the next junction
             turn_junction(get_turn_direction());
             block_expected = true;
             break;
         case ROBOT_GO_WEE_WOO_ANT:
             //This is the finding the block in the nooks
+            Serial.println("WEE WOO.");
             turn_junction(get_turn_direction());
             move_forward_tracking(distance_between_centre_junction_and_houses);
             main_motors.turn_90_right();    //Means it always needs to go in a specific way.
@@ -270,7 +276,7 @@ void pick_up_block(){
     //assume no magnet
     is_magnet = false;
     leds.red_on();
-    leds.blue_off();
+    leds.green_off();
     is_magnet = false;
 
     //check if we are wrong
@@ -282,7 +288,7 @@ void setup()
     IDP_setup();
     //leds.blue_blink();
     Serial.println("moving forward");
-    main_motors.move_forward(200);
+    // main_motors.move_forward(300);
     Serial.println("done");
 }
 
