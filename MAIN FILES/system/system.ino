@@ -275,8 +275,8 @@ void pick_up_block(){
     block_expected = false;
     //assume no magnet
     is_magnet = false;
-    leds.red_on();
-    leds.green_off();
+    leds.red_off();
+    leds.green_on();
     is_magnet = false;
 
     //check if we are wrong
