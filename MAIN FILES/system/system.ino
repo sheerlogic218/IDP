@@ -46,7 +46,7 @@ int path[] = {
     // Handle hidden block on this road - not tested this far quite yet
     ROBOT_GO_WEE_WOO_ANT, LEFT, LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
     // Handle final hidden block
-    LEFT, RIGHT, RIGHT, ROBOT_GO_WEE_WOO_ANT, STRAIGHT_ON, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_RIGHT,
+    LEFT, RIGHT, RIGHT, ROBOT_GO_WEE_WOO_ANT, STRAIGHT_ON, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,
     // End of path - this just returns it to its starting point as a show off move.
     LEFT, RIGHT, RIGHT, LEFT, COMPLETED_ANT ,STRAIGHT_ON  //My cravings to try and make the lobster ram into the house are unparalelled, I think it would be funny.
 };
@@ -134,7 +134,8 @@ int get_turn_direction()
  */
 void turn_junction(int turn_direction) {
     iterate_respective_progress(1);     //This is because we will now complete this turn (or find out and undo this assumption)
-
+    Serial.print("Block expected: ");
+    Serial.println(block_expected);
     switch (turn_direction) {
         case STRAIGHT_ON:
             Serial.println("Turn direction: STRAIGHT_ON");
@@ -207,10 +208,6 @@ void turn_junction(int turn_direction) {
             break;
         default:
             Serial.println("Turn direction: INVALID");
-            // Stop the robot for invalid direction
-            main_motors.stop();
-            break;
-    }
             // Stop the robot for invalid direction
             main_motors.stop();
             break;
