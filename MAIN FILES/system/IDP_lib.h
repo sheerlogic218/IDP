@@ -215,7 +215,7 @@ class Servo_claws {
   //turns the servos to a target angle relative to their "0"
   void steady_turn(int target_angle){
     if (target_angle<max_angle && target_angle > min_angle){
-      for (int angle = min_angle; angle <= target_angle; angle += 1){
+      for (int angle = current_angle; angle <= target_angle; angle += 1){
         //left has "0" at 270 due to being mirrored
         left_servo.write(max_angle-angle);
         right_servo.write(angle);
@@ -327,8 +327,8 @@ void read_line_sensors(){
 bool read_magnet_sensor(){
   float valueL, valueR;
   //const int magnet_threshold = 30;
-  valueL = analogRead(A0) - 500;
-  valueR = analogRead(A1) - 490;
+  float valueL = analogRead(A0) - 500;
+  float valueR = analogRead(A1) - 490;
   if ( (abs(valueL)+abs(valueR)) >= 30 ){
     is_magnet = true;
     leds.green_off();
