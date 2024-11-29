@@ -214,7 +214,7 @@ class Servo_claws {
 
   //turns the servos to a target angle relative to their "0"
   void steady_turn(int target_angle){
-    if (target_angle<max_angle && target_angle > min_angle){
+    if (target_angle<max_angle && target_angle > min_angle && current_angle < target_angle){
       for (int angle = current_angle; angle <= target_angle; angle += 1){
         //left has "0" at 270 due to being mirrored
         left_servo.write(max_angle-angle);
