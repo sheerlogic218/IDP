@@ -12,14 +12,12 @@ short int led3pin = 11;    //blue
 
 DFRobot_VL53L0X tof_sensor;
 
-const byte hallPinLeft = A0; // AH3503 sensor connected to A0 5volt and ground
-const byte hallPinRight = A1; // AH3503 sensor connected to A0 5volt and ground
-const int offsetL = 500; // calibrate zero
-const int offsetR = 490; // calibrate zero
-const float span = 0.3617; // calibrate A/D > mT
-const float sensitivity = 3.125; // mV/Gauss
-float valueL, valueR;
-const int magnet_threshold = 30;
+// const byte hallPinLeft = A0; // AH3503 sensor connected to A0 5volt and ground
+// const byte hallPinRight = A1; // AH3503 sensor connected to A0 5volt and ground
+// const int offsetL = 500; // calibrate zero
+// const int offsetR = 490; // calibrate zero
+//const float span = 0.3617; // calibrate A/D > mT
+//const float sensitivity = 3.125; // mV/Gauss
 bool is_magnet = false; // Magnetic is recyclable is centre with chimmney
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
@@ -327,9 +325,11 @@ void read_line_sensors(){
 }
 
 bool read_magnet_sensor(){
-  valueL = analogRead(hallPinLeft) - offsetL;
-  valueR = analogRead(hallPinRight) - offsetR;
-  if ( (abs(valueL)+abs(valueR)) >= magnet_threshold ){
+  float valueL, valueR;
+  //const int magnet_threshold = 30;
+  valueL = analogRead(A0) - 500;
+  valueR = analogRead(A1) - 490;
+  if ( (abs(valueL)+abs(valueR)) >= 30 ){
     is_magnet = true;
     leds.green_off();
     leds.red_on();
