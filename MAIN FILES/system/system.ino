@@ -13,6 +13,7 @@ const int EXPECT_BLOCK_ANT              = 8;   //These are a couple of methods t
 const int ROBOT_GO_WEE_WOO_ANT_FIRST    = 9;   //These things are meant to be done during navigation but called after a junction
 const int ROBOT_GO_WEE_WOO_ANT_SECND    = 10;   //These things are meant to be done during navigation but called after a junction
 const int COMPLETED_ANT                 = 11;
+const int COMPLETED                     = 12;
 
 
 // Navigation variables
