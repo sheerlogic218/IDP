@@ -66,7 +66,7 @@ int special_path[][8] = {
     // Mode 3 - Going to the Magnet centre from the north-west
     {STRAIGHT_ON, LEFT, DROP_OFF_ANT, RIGHT, LEFT, SPECIAL_DONE},
     // Mode 4 - Testing routine, can be changed, is redundant. Prepared to test house wee_wooing
-    {LEFT, DROP_OFF_ANT, LEFT, LEFT, SPECIAL_DONE}
+    {LEFT, ROBOT_GO_WEE_WOO_ANT_FIRST, LEFT, LEFT, SPECIAL_DONE}
 };
 
 /**
