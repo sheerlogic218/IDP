@@ -30,6 +30,7 @@ int distance_between_centre_junction_and_houses_SECOND = 150;  //Will likely nee
 int block_approach_speed = 130;
 int default_travel_speed = 220;
 int amount_to_go_forward_at_the_end = 300;
+int nook_depth = 350;
 
 // Path array defining the robot's route
 int path[] = {
@@ -250,7 +251,7 @@ void drop_off()
     main_motors.go_backward();
     // Continue moving backward until a line is detected (at which point the line state is >= 5)
     while(get_line_state() < 5){
-        //leds.blue_blink();
+        leds.blue_blink_async();
     }
     Serial.println("Line detected, stopping and closing claws.");
     //Claws.close();
@@ -269,13 +270,27 @@ void grab_from_nook()
 {
     Serial.println("Move mode: Praying grab from the nook works");
     //leds.red_on();  //idk what red means, might be being naughty for doing this but i want red.
-    pick_up_block();
+    main_motors.move_backward(10);
+    Claws.open();
+    main_motors.move_forward(nook_depth);
+    Claws.close();
+    //This needs to be tested for lower numbers
+    main_motors.move_backward(50);  
+    has_block = true;
+    block_expected = false;
+    //assume no magnet
+    is_magnet = false;
+    leds.red_off();
+    leds.green_on();
+
+    //check if we are wrong
+    read_magnet_sensor(); //updates is_magnet
+    //ZAC ILL NEED TO TEST HERE FOR WHY IT ISN'T REVERSING
     main_motors.go_backward();
     // Continue moving backward until a line is detected (at which point the line state is >= 5)
     while(get_line_state() < 5){
         leds.blue_blink_async();    //If there is a bug here its async
     }
-    //leds.red_blink();
     read_magnet_sensor();   //LEDS must be updated
     main_motors.stop();
     main_motors.move_forward(10);
