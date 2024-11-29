@@ -192,7 +192,7 @@ void turn_junction(int turn_direction) {
             Serial.println("Turn direction: ROBOT_GO_WEE_WOO_ANT");
             //This is the finding the block in the nooks
             turn_junction(get_turn_direction());
-            move_forward_tracking(distance_between_centre_junction_and_houses_FIRST_HOUSE);
+            move_forward_tracking(distance_between_centre_junction_and_houses_FIRST);
             main_motors.turn_90_right();    //Means it always needs to go in a specific way.
             grab_from_nook();
             turn_junction(get_turn_direction());
@@ -201,7 +201,7 @@ void turn_junction(int turn_direction) {
             Serial.println("Turn direction: ROBOT_GO_WEE_WOO_ANT");
             //This is the finding the block in the nooks
             turn_junction(get_turn_direction());
-            move_forward_tracking(distance_between_centre_junction_and_houses_SECOND_HOUSE);
+            move_forward_tracking(distance_between_centre_junction_and_houses_SECOND);
             main_motors.turn_90_right();    //Means it always needs to go in a specific way.
             grab_from_nook();
             turn_junction(get_turn_direction());
