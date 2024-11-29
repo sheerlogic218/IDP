@@ -28,8 +28,8 @@ bool has_block = false;
 long min_time_between_junctions = 750;                 //Failsafe parameter
 int distance_between_centre_junction_and_houses_FIRST = 150;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int distance_between_centre_junction_and_houses_SECOND = 150;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
-int block_approach_speed = 130;
-int default_travel_speed = 220;
+int block_approach_speed = 150;
+int default_travel_speed = 240;
 int amount_to_go_forward_at_the_end = 300;
 int nook_depth = 350;
 
@@ -301,17 +301,17 @@ void grab_from_nook()
 void pick_up_block(){
     main_motors.move_backward(10);
     Claws.open();
-    main_motors.move_forward(200);
+    main_motors.move_forward(60);
     Claws.close();
     //This needs to be tested for lower numbers
     main_motors.move_backward(50);  
     has_block = true;
     block_expected = false;
     //assume no magnet
-    is_magnet = false;
-    leds.red_off();
-    leds.green_on();
-    is_magnet = false;
+    // is_magnet = false;
+    // leds.red_off();
+    // leds.green_on();
+
 
     //check if we are wrong
     read_magnet_sensor(); //updates is_magnet
@@ -322,7 +322,7 @@ void setup()
     IDP_setup();
     //leds.blue_blink();
     Serial.println("moving forward");
-    // main_motors.move_forward(300);
+    // main_motors.move_forward(200);
     Serial.println("done");
 }
 

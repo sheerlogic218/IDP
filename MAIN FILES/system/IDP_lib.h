@@ -3,6 +3,12 @@
 #include <Servo.h>
 #include "Wire.h"
 #include "DFRobot_VL53L0X.h"
+//15046
+//1828
+//setup for leds
+short int led1pin = 8;   //red
+short int led2pin = 2;   //green
+short int led3pin = 11;    //blue
 
 DFRobot_VL53L0X tof_sensor;
 
@@ -14,7 +20,7 @@ const float span = 0.3617; // calibrate A/D > mT
 const float sensitivity = 3.125; // mV/Gauss
 float valueL, valueR;
 const int magnet_threshold = 30;
-int is_magnet = 0; // Magnetic is recyclable is centre with chimmney
+bool is_magnet = false; // Magnetic is recyclable is centre with chimmney
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *main_motor_left  = AFMS.getMotor(1); //motor pin 1
@@ -23,18 +29,13 @@ Adafruit_DCMotor *main_motor_right = AFMS.getMotor(2); //motor pin 2
 Servo left_servo;
 Servo right_servo;
 
-//setup for leds
-int led1pin = 8;   //red
-int led2pin = 2;   //green
-int led3pin = 11;    //blue
-
 volatile byte state = LOW;
 
 //create class to control main motors
 class MainMotors {
   public:
-    int max_speed = 255;
-    int min_speed = 0;
+    //int max_speed = 255;
+    //int min_speed = 0;
     int speed = 0;
     int current_speed = 0;
     int l_speed = 0;
@@ -55,60 +56,38 @@ class MainMotors {
     int sensor_wheel_dist = 110;//mm
     
 
+  int clamp_val(int val){
+    if (val >= 255){return 255;}
+    else if (val <= 0){return 0;}
+    return val;
+  }
+
   //simple interface for using built in functions -- verified
-  void set_ML_speed(int l_speed) {
-    if (l_speed > max_speed) {
-      l_speed = max_speed;
-    }
-    else if (l_speed < min_speed) {
-      l_speed = min_speed;
-    }
+  void set_ML_speed(int val) {
+    l_speed = clamp_val(val);
     main_motor_left->setSpeed(l_speed);
   }
-  void set_MR_speed(int r_speed) {
-    if (r_speed > max_speed) {
-      r_speed = max_speed;
-    }
-    else if (r_speed < min_speed) {
-      r_speed = min_speed;
-    }
+  void set_MR_speed(int val) {
+    r_speed = clamp_val(val);
     main_motor_right->setSpeed(r_speed);
   }
 
-  //joint function to set speed of both motors -- verified -- test for values out of range, i would assume they would be clipped to the max/min values by default
-  void set_speed(int speed) {
-    if(speed != current_speed || l_speed != r_speed || r_speed != current_speed)  //HOPEFULLY AN OPTIMISATION TRICK
-    {
-      if (speed > max_speed) {
-      speed = max_speed;
-      }
-      else if (speed < min_speed) {
-      speed = min_speed;
-      }
-      l_speed = r_speed = speed;
-      set_ML_speed(l_speed);
-      set_MR_speed(r_speed);
-      current_speed = speed;
+  void set_speed(int val) {
+    if (val != current_speed || l_speed != r_speed || r_speed != current_speed) {
+      current_speed = speed = clamp_val(val);
+      set_ML_speed(speed);
+      set_MR_speed(speed);
     }
   }
 
-  //function to change speed of both motors -- verified
-  void change_speed(int delta) {
-    l_speed = r_speed = speed += delta;
-    if (speed > max_speed) {
-      speed = max_speed;
-    } else if (speed < min_speed) {
-      speed = min_speed;
-    }
-    set_speed(speed);
+  void change_speed(int delta){
+    set_speed(speed+delta);
   }
-  void change_ML_speed(int delta) {
-    l_speed += delta;
-    set_ML_speed(l_speed);
+  void change_ML_speed(int delta){
+    set_ML_speed(l_speed+delta);
   }
-  void change_MR_speed(int delta) {
-    r_speed += delta;
-    set_MR_speed(r_speed);
+  void change_MR_speed(int delta){
+    set_MR_speed(r_speed+delta);
   }
 
   //due to the way the motors are wired they may have to be reversed, -- verified for current arrangement, ie forward is forward and turns are correct
@@ -137,8 +116,7 @@ class MainMotors {
       //both motors forward
       ML_run(FORWARD);
       MR_run(FORWARD);
-    }
-    else { stop(); }
+    } else {stop();}
   }
   // sends both motors backward -- verified
   void go_backward() {
@@ -152,17 +130,6 @@ class MainMotors {
     set_speed(0);
     main_motor_left->run(RELEASE);
     main_motor_right->run(RELEASE);
-  }
-  //simple turn functions -- verified
-  void turn_left(int speed) {
-    set_speed(speed);
-    ML_run(BACKWARD);
-    MR_run(FORWARD);
-  }
-  void turn_right(int speed) {
-    set_speed(speed);
-    ML_run(FORWARD);
-    MR_run(BACKWARD);
   }
 
   void move_forward(int dist) {
@@ -297,14 +264,8 @@ class LED_indicator{
     red_off();
   }
   void red_blink_async(){
-    if(millis() % 500 < 250)
-    {
-      red_on();
-    }
-    else
-    {
-      red_off();
-    }
+    if(millis() % 500 < 250){red_on();}
+    else{red_off();}
   }
 
   void green_on(){
@@ -319,14 +280,8 @@ class LED_indicator{
     green_off();
   }
   void green_blink_async(){
-    if(millis() % 500 < 250)
-    {
-      green_on();
-    }
-    else
-    {
-      green_off();
-    }
+    if(millis() % 500 < 250) {green_on();}
+    else {green_off();}
   }
 
   void blue_on(){
@@ -341,29 +296,23 @@ class LED_indicator{
     blue_off();
   }
   void blue_blink_async(){
-    if(millis() % 500 < 250)
-    {
-      blue_on();
-    }
-    else
-    {
-      blue_off();
-    }
+    if(millis() % 500 < 250) {blue_on();}
+    else {blue_off();}
   }
 };
 LED_indicator leds;
 
 //set to safe pins
-int far_left_sensor = 4;
-int left_sensor = 5; 
-int right_sensor = 6;
-int far_right_sensor = 7;
+short int far_left_sensor = 4;
+short int left_sensor = 5; 
+short int right_sensor = 6;
+short int far_right_sensor = 7;
 
 //initialize the states of the sensors
-int fls_state = 0;
-int ls_state = 0;
-int rs_state = 0;
-int frs_state = 0;
+bool fls_state = 0;
+bool ls_state = 0;
+bool rs_state = 0;
+bool frs_state = 0;
 
 int tof_block_distance = 1000;
 int soft_turn_rate = 10;
@@ -380,107 +329,132 @@ void read_line_sensors(){
 bool read_magnet_sensor(){
   valueL = analogRead(hallPinLeft) - offsetL;
   valueR = analogRead(hallPinRight) - offsetR;
-  Serial.print("Left Value: ");
-  Serial.print(valueL, 1);
-  Serial.print("    Right Value: ");
-  Serial.println(valueR, 1);
   if ( (abs(valueL)+abs(valueR)) >= magnet_threshold ){
     is_magnet = true;
     leds.green_off();
     leds.red_on();
     return is_magnet;
   }
-  // is_magnet = false;
-  // leds.blue_off();
-  // leds.red_on();
+  is_magnet = false;
+  leds.green_on();
+  leds.red_off();
   return is_magnet;
 }
 
 int get_line_state(){
   read_line_sensors();
-  if (fls_state == 0 && frs_state == 0){
-    if(ls_state == 1 && rs_state == 1){
-      return 1; //1 = forward
-    } else if (ls_state == 1 && rs_state == 0){
-      return 2; //2 = right of line
-    } else if (ls_state == 0 && rs_state == 1){
-      return 3; //3 = left of line
-    } else{
-      return 4;//4 = center is off line, correct please
-    }
-  } else if (fls_state == 1  && frs_state == 0){
-    return 5;//at left junction
-  } else if (fls_state == 0 && frs_state == 1){
-    return 6;//at right junction
-  } else if(fls_state == 1 && frs_state == 1){
-    return 7; //at T junction
-  } else {
-    return 0; //really shouldnt run
+  if (!fls_state && !frs_state){
+    if(ls_state && rs_state){return 1;} // on line
+    else if (ls_state){return 2;} // to the right
+    else if (rs_state){return 3;} // to the left
+    else {return 4;} // off line
+  }else{
+    if (fls_state && frs_state){ return 7;} // at T junc
+    else if (fls_state){return 5;} // at left junc
+    else if (frs_state){return 6;} // at right junc
+    else {return 0;} // should never run but cant hurt to have
   }
 }
 
 void turn_left_until_line(){
-  main_motors.move_backward(12);
-  main_motors.set_MR_speed(210);
+  main_motors.move_backward(10);
+  main_motors.set_MR_speed(255);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
   Serial.println("starting turn");
-  delay(800);
-  while (get_line_state() != 1){
+  delay(700);
+  while (get_line_state() != 2){//3
     leds.blue_blink_async();
     if(state);
     else{
       main_motors.stop();
       break;}
   }
-  delay(120);//90
-  main_motors.stop();
-  Serial.println("finished turn");
+  delay(80);//90
+  // main_motors.set_MR_speed(230);
+  // main_motors.set_ML_speed(180);
+
 }
 
 void turn_right_until_line(){
-  main_motors.move_backward(12);
-  main_motors.set_ML_speed(210);
+  main_motors.move_backward(10);
+  main_motors.set_ML_speed(255);
   main_motors.set_MR_speed(0);
   main_motors.go_forward();
-  delay(800);
-  while (get_line_state() != 1){
+  delay(700);
+  while (get_line_state() != 3){//2
     leds.blue_blink_async();
     if(state);
     else{
       main_motors.stop();
       break;}
   }
-  delay(120);
-  main_motors.stop();
+  delay(80);
+  // main_motors.set_ML_speed(230);
+  // main_motors.set_MR_speed(180);
 }
 
 // Function for line tracking forward
-void line_track_forward(int follow_speed = 220 ) {
+// void line_track_forward2(int follow_speed = 220 ) {
+//   read_line_sensors();
+//   leds.blue_blink_async();
+//   // Test code for 4 sensor following
+//   if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+//     main_motors.set_speed(follow_speed);
+//     main_motors.go_forward();
+//   } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+//     main_motors.change_MR_speed(15);
+//     main_motors.go_forward();
+//   } else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+//     main_motors.change_ML_speed(15);
+//     main_motors.go_forward();
+//   } else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+//     // Something went wrong
+//     main_motors.move_backward(10);
+//     main_motors.stop();
+//   }
+//   CODE MOVEMENT
+//   Block logic moved to system.ino
+// }
+
+void line_track_forward(int follow_speed = 240){
   read_line_sensors();
   leds.blue_blink_async();
-  // Test code for 4 sensor following
-  if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-    main_motors.set_speed(follow_speed);
-    main_motors.go_forward();
-  } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
-    main_motors.change_MR_speed(15);
-    main_motors.go_forward();
-  } else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-    main_motors.change_ML_speed(15);
-    main_motors.go_forward();
-  } else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
-    // Something went wrong
-    main_motors.move_backward(10);
-    main_motors.stop();
+  //Serial.println(get_line_state());
+  switch (get_line_state()){
+    case 1:
+      //centered
+      Serial.println("on line");
+      main_motors.change_speed(5);
+      //main_motors.set_speed(follow_speed);
+      main_motors.go_forward();
+      break;
+    case 2:
+      //right of line
+      Serial.println("right of line");
+      main_motors.change_MR_speed(5);
+      main_motors.change_ML_speed(-2);
+      main_motors.go_forward();
+      break;
+    case 3:
+      //left of line
+      Serial.println("left of line");
+      main_motors.change_ML_speed(5);
+      main_motors.change_MR_speed(-2);
+      main_motors.go_forward();
+      break;
+    case 4:
+      main_motors.move_backward(5);
+      break;
+    default: // at junction
+      break;
   }
-  // CODE MOVEMENT
-  // Block logic moved to system.ino
+  
 }
 
 //Less accurate distance than regular move_forward due to turning, 
-void move_forward_tracking(int dist, int move_speed = 230) 
-{  //New function, bailen pls fix if errors exist
+void move_forward_tracking(int dist, int move_speed = 240){
+  //New function, bailen pls fix if errors exist
   main_motors.stop();
   main_motors.set_speed(move_speed);
   //I think the maths below is incorrect since the speed is nonlinear with power, good simple version
@@ -493,17 +467,19 @@ void move_forward_tracking(int dist, int move_speed = 230)
   main_motors.stop();
 }
 
-void interrupt_function()
-{
+void interrupt_function() {
   volatile static unsigned long last_interrupt = 0;
-  unsigned long t = millis();
-  if (t - last_interrupt > 500UL){
+  if (millis() - last_interrupt > 500UL){
     state = !state;
   }
-  last_interrupt = t;
+  last_interrupt = millis();
 }
 
 void IDP_setup() {
+  //LED
+  pinMode(led1pin, OUTPUT);
+  pinMode(led2pin, OUTPUT);
+  pinMode(led3pin, OUTPUT);
   leds.blue_on();
 
   //stops motors straight away
@@ -543,20 +519,11 @@ void IDP_setup() {
 
   //tof sensor 
   Wire.begin();
+  tof_sensor.begin(0x50); //Set I2C sub-device address
+  tof_sensor.setMode(tof_sensor.eContinuous,tof_sensor.eHigh); //Set to Back-to-back mode and high precision mode
+  tof_sensor.start(); //Laser rangefinder begins to work
 
-  //Set I2C sub-device address
-  tof_sensor.begin(0x50);
 
-  //Set to Back-to-back mode and high precision mode
-  tof_sensor.setMode(tof_sensor.eContinuous,tof_sensor.eHigh);
-
-  //Laser rangefinder begins to work
-  tof_sensor.start();
-
-  //LED
-  pinMode(led1pin, OUTPUT);
-  pinMode(led2pin, OUTPUT);
-  pinMode(led3pin, OUTPUT);
 
   leds.blue_off();
   //Bailen ill change back the LEDS but i assumed the blinking was cool and we want cool, so i made it cool and data informative ish.
