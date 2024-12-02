@@ -438,25 +438,21 @@ void turn_right_until_line(){
 void line_track_forward(int follow_speed = 240){
   read_line_sensors();
   leds.blue_blink_async();
-  //Serial.println(get_line_state());
   switch (get_line_state()){
     case 1:
       //centered
-      Serial.println("on line");
       main_motors.change_speed(5);
       //main_motors.set_speed(follow_speed);
       main_motors.go_forward();
       break;
     case 2:
       //right of line
-      Serial.println("right of line");
       main_motors.change_MR_speed(5);
       main_motors.change_ML_speed(-2);
       main_motors.go_forward();
       break;
     case 3:
       //left of line
-      Serial.println("left of line");
       main_motors.change_ML_speed(5);
       main_motors.change_MR_speed(-2);
       main_motors.go_forward();
