@@ -11,7 +11,7 @@ const int TESTING                       = 6;
 const int DROP_OFF_ANT                  = 7;   //ANT MEANS After Next Turn
 const int EXPECT_BLOCK_ANT              = 8;   //These are a couple of methods that setup the system to perform things on paths
 const int ROBOT_GO_WEE_WOO_ANT_FIRST    = 9;   //These things are meant to be done during navigation but called after a junction
-const int ROBOT_GO_WEE_WOO_ANT_SECND    = 10;   //These things are meant to be done during navigation but called after a junction
+const int ROBOT_GO_WEE_WOO_ANT_SECOND   = 10;   //These things are meant to be done during navigation but called after a junction
 const int COMPLETED_ANT                 = 11;
 const int COMPLETED                     = 12;
 
@@ -22,12 +22,11 @@ int special_mode = -1;
 int special_progress = 0;
 long last_turn_time_failsafe = 0;
 bool block_expected = true;                 
-bool has_block = false;
 
 //CONFIGURATION VARIABLES
 long min_time_between_junctions = 750;                 //Failsafe parameter
 int distance_between_centre_junction_and_houses_FIRST = 150;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
-int distance_between_centre_junction_and_houses_SECOND = 150;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
+int distance_between_centre_junction_and_houses_SECOND = 300;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int block_approach_speed = 180;
 int default_travel_speed = 240;
 int amount_to_go_forward_at_the_end = 300;
@@ -51,7 +50,7 @@ int path[] = {
     // Handle hidden block on this road - not tested this far quite yet
     ROBOT_GO_WEE_WOO_ANT_FIRST, LEFT, LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
     // Handle final hidden block
-    LEFT, RIGHT, RIGHT, ROBOT_GO_WEE_WOO_ANT_SECND, STRAIGHT_ON, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,
+    LEFT, RIGHT, RIGHT, ROBOT_GO_WEE_WOO_ANT_SECOND, STRAIGHT_ON, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,
     // End of path - this just returns it to its starting point as a show off move.
     LEFT, RIGHT, RIGHT, LEFT, COMPLETED_ANT ,STRAIGHT_ON  //My cravings to try and make the lobster ram into the house are unparalelled, I think it would be funny.
 };
@@ -67,7 +66,7 @@ int special_path[][8] = {
     // Mode 3 - Going to the Magnet centre from the north-west
     {STRAIGHT_ON, LEFT, DROP_OFF_ANT, RIGHT, LEFT, SPECIAL_DONE},
     // Mode 4 - Testing routine, can be changed, is redundant. Prepared to test house wee_wooing
-    {LEFT, ROBOT_GO_WEE_WOO_ANT_FIRST, LEFT, LEFT, SPECIAL_DONE}
+    {ROBOT_GO_WEE_WOO_ANT_SECOND, LEFT, LEFT, LEFT, SPECIAL_DONE}
 };
 
 /**
@@ -79,16 +78,10 @@ void iterate_respective_progress(int amount = 1)
 {
     if(special_mode == -1)
     {
-        Serial.print("Current navigation progress (main): ");
-        Serial.println(progress);
         progress = progress + amount;
     }
     else
     {
-        Serial.print("Current special progress: ");
-        Serial.println(special_progress);
-        Serial.print("Current special mode: ");
-        Serial.println(special_mode);
         special_progress = special_progress + amount;
     }
 }
@@ -104,16 +97,12 @@ int get_turn_direction()
     // Failsafe for if we are trying to turn the same junction twice.
     if(last_turn_time_failsafe + min_time_between_junctions > millis())
     {
-        Serial.println("ERROR: Rapid re-junctioning detected, repeating last junction.");
-        Serial.print("Last turn time: ");
-        Serial.println(last_turn_time_failsafe);
         iterate_respective_progress(-1);
     }
 
     // Failsafe for if we are past the end of the path.
     if(progress > (sizeof(path)/sizeof(path[0])))
     {
-        Serial.println("End of path reached. Stopping.");
         state = HIGH;
         return COMPLETED;
     }
@@ -139,8 +128,6 @@ int get_turn_direction()
  */
 void turn_junction(int turn_direction) {
     iterate_respective_progress(1);     //This is because we will now complete this turn (or find out and undo this assumption)
-    Serial.print("Block expected: ");
-    Serial.println(block_expected);
     switch (turn_direction) {
         case STRAIGHT_ON:
             Serial.println("Turn direction: STRAIGHT_ON");
@@ -194,11 +181,13 @@ void turn_junction(int turn_direction) {
             //This is the finding the block in the nooks
             turn_junction(get_turn_direction());
             move_forward_tracking(distance_between_centre_junction_and_houses_FIRST);
+            Serial.println("turning right");
             main_motors.turn_90_right();    //Means it always needs to go in a specific way.
+            Serial.println("turned right");
             grab_from_nook();
             turn_junction(get_turn_direction());
             break;
-        case ROBOT_GO_WEE_WOO_ANT_SECND:
+        case ROBOT_GO_WEE_WOO_ANT_SECOND:
             Serial.println("Turn direction: ROBOT_GO_WEE_WOO_ANT");
             //This is the finding the block in the nooks
             turn_junction(get_turn_direction());
@@ -235,15 +224,10 @@ void turn_junction(int turn_direction) {
  */
 void drop_off()
 {
-    Serial.println("Move mode: Drop Off Block");
     leds.blue_blink();
-    Serial.println("Moving forward to drop off block.");
     move_forward_tracking(50);
     delay(50);
-    Serial.println("Opening claws to release block.");
     Claws.open();
-
-    Serial.println("Moving backward after releasing block.");
     main_motors.move_backward(100);
     Claws.close();
     // Can't track backwards due to sensor positioning.
@@ -271,13 +255,12 @@ void grab_from_nook()
 {
     Serial.println("Move mode: Praying grab from the nook works");
     //leds.red_on();  //idk what red means, might be being naughty for doing this but i want red.
-    main_motors.move_backward(10);
+    main_motors.move_backward(75);
     Claws.open();
     main_motors.move_forward(nook_depth);
     Claws.close();
     //This needs to be tested for lower numbers
     main_motors.move_backward(50);  
-    has_block = true;
     block_expected = false;
     //assume no magnet
     is_magnet = false;
@@ -287,10 +270,13 @@ void grab_from_nook()
     //check if we are wrong
     read_magnet_sensor(); //updates is_magnet
     //ZAC ILL NEED TO TEST HERE FOR WHY IT ISN'T REVERSING
+    main_motors.set_speed(200);
     main_motors.go_backward();
     // Continue moving backward until a line is detected (at which point the line state is >= 5)
     while(get_line_state() < 5){
+        main_motors.go_backward();
         leds.blue_blink_async();    //If there is a bug here its async
+
     }
     read_magnet_sensor();   //LEDS must be updated
     main_motors.stop();
@@ -305,7 +291,6 @@ void pick_up_block(){
     Claws.close();
     //This needs to be tested for lower numbers
     main_motors.move_backward(50);  
-    has_block = true;
     block_expected = false;
     //assume no magnet
     // is_magnet = false;
@@ -325,7 +310,7 @@ void setup()
     IDP_setup();
     //leds.blue_blink();
     Serial.println("moving forward");
-    // main_motors.move_forward(200);
+    main_motors.move_forward(300);
     Serial.println("done");
 }
 

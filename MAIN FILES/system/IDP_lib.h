@@ -47,7 +47,7 @@ class MainMotors {
     float wheel_radius = 32.5; //mm
     int wheel_base = 170; //mm
     //max angular speed of wheel, radians per second
-    float max_wheel_angular_speed = 1.55*Pi;
+    float max_wheel_angular_speed = 1.4*Pi;
     //(5*360)/(5*2*Pi);
     //double wheel_angular_speed_100 = 0;
     float max_wheel_speed = max_wheel_angular_speed*wheel_radius; //max linear speed of wheel mm/s
@@ -142,7 +142,7 @@ class MainMotors {
 
   void move_backward(int dist) {
     stop();
-    int move_speed = 200;
+    int move_speed = 230;
     set_speed(move_speed);
     unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*max_wheel_speed );
     go_backward();
@@ -155,7 +155,7 @@ class MainMotors {
     move_forward(20);
     }
     stop();
-    int turn_speed = 200;
+    int turn_speed = 240;
     set_MR_speed(turn_speed);
     set_ML_speed(0);
     double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
@@ -170,7 +170,7 @@ class MainMotors {
     move_forward(20);
     }
     stop();
-    int turn_speed = 200;
+    int turn_speed = 240;
     set_ML_speed(turn_speed);
     set_MR_speed(0);
     double factor = (turn_speed/255.0)*max_wheel_angular_speed*(wheel_radius/wheel_base);
@@ -365,7 +365,6 @@ void turn_left_until_line(){
   main_motors.set_MR_speed(255);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
-  Serial.println("starting turn");
   delay(700);
   while (get_line_state() != 2){//3
     leds.blue_blink_async();
@@ -421,13 +420,14 @@ void turn_right_until_line(){
 //   Block logic moved to system.ino
 // }
 
-void line_track_forward(int follow_speed = 240){
+void line_track_forward(int follow_speed = 0 ){
   read_line_sensors();
   leds.blue_blink_async();
   switch (get_line_state()){
     case 1:
       //centered
-      main_motors.change_speed(10);
+      if (follow_speed != 0){ main_motors.set_speed(follow_speed); }
+      else { main_motors.change_speed(18); }
       //main_motors.set_speed(follow_speed);
       main_motors.go_forward();
       break;
@@ -462,7 +462,7 @@ void move_forward_tracking(int dist, int move_speed = 240){
   main_motors.go_forward();
   unsigned long move_forward_tracking_start = millis();
   while( millis() < move_forward_tracking_start + t ) {
-    line_track_forward(move_speed);
+    move_forward_tracking(move_speed);
   }
   main_motors.stop();
 }
