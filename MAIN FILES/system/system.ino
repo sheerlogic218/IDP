@@ -285,9 +285,9 @@ void grab_from_nook()
 
 //executes the pick_up_block() routine
 void pick_up_block(){
-    main_motors.move_backward(10);
+    main_motors.move_backward(20);
     Claws.open();
-    main_motors.move_forward(60);
+    main_motors.move_forward(70);
     Claws.close();
     //This needs to be tested for lower numbers
     main_motors.move_backward(50);  
@@ -310,12 +310,12 @@ void setup()
     IDP_setup();
     //leds.blue_blink();
     Serial.println("moving forward");
-    main_motors.move_forward(250);
+    main_motors.move_forward(200);
     Serial.println("done");
-    while(get_line_state() != 1)
-    {
-      turn_left_until_line();
-    }
+    // while(get_line_state() != 1)
+    // {
+    //   turn_left_until_line();
+    // }
 }
 
 /**

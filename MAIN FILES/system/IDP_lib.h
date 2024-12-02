@@ -356,7 +356,7 @@ int get_line_state(){
     if (fls_state && frs_state){ return 7;} // at T junc
     else if (fls_state){return 5;} // at left junc
     else if (frs_state){return 6;} // at right junc
-    else {return 0;} // should never run but cant hurt to have
+    //else {return 0;} // should never run but cant hurt to have
   }
 }
 
@@ -365,7 +365,7 @@ void turn_left_until_line(){
   main_motors.set_MR_speed(255);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
-  delay(500);
+  delay(800);
   while (get_line_state() != 2){//3
     leds.blue_blink_async();
     if(state);
@@ -384,7 +384,7 @@ void turn_right_until_line(){
   main_motors.set_ML_speed(255);
   main_motors.set_MR_speed(0);
   main_motors.go_forward();
-  delay(500);
+  delay(800);
   while (get_line_state() != 3){//2
     leds.blue_blink_async();
     if(state);
