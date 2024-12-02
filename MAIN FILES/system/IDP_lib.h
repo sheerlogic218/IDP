@@ -20,7 +20,7 @@ DFRobot_VL53L0X tof_sensor;
 //const float sensitivity = 3.125; // mV/Gauss
 bool is_magnet = false; // Magnetic is recyclable is centre with chimmney
 
-Adafruit_MotorShield AFMS = Adafruit_MotorShield();
+Adafruit_MotorShield AFMS = Adafruit_MotorShield();\
 Adafruit_DCMotor *main_motor_left  = AFMS.getMotor(1); //motor pin 1
 Adafruit_DCMotor *main_motor_right = AFMS.getMotor(2); //motor pin 2
 
