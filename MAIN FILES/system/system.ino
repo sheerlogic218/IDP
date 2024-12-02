@@ -15,6 +15,10 @@ const int ROBOT_GO_WEE_WOO_ANT_SECOND   = 10;   //These things are meant to be d
 const int COMPLETED_ANT                 = 11;
 const int COMPLETED                     = 12;
 
+// Constants for LED order
+const int RED = 0;
+const int GREEN = 1;
+const int BLUE = 2;
 
 // Navigation variables
 int progress = 0;
