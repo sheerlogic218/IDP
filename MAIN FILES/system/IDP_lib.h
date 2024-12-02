@@ -327,19 +327,23 @@ void read_line_sensors(){
 bool read_magnet_sensor(){
   float valueL, valueR;
   //const int magnet_threshold = 30;
-  float valueL = analogRead(A0) - 500;
-  float valueR = analogRead(A1) - 490;
-  if ( (abs(valueL)+abs(valueR)) >= 30 ){
+  valueL = analogRead(A0) - 500;
+  valueR = analogRead(A1) - 490;
+  float sum = abs(valueL)+abs(valueR);
+  Serial.print(sum);
+  if ( (sum) >= 30 ){
     is_magnet = true;
     leds.green_off();
     leds.red_on();
+    Serial.println("Magnet detected");
     return is_magnet;
   }
   is_magnet = false;
   leds.green_on();
   leds.red_off();
+  Serial.println("Magnet not detected");
   return is_magnet;
-}
+  }
 
 int get_line_state(){
   read_line_sensors();
@@ -423,7 +427,7 @@ void line_track_forward(int follow_speed = 240){
   switch (get_line_state()){
     case 1:
       //centered
-      main_motors.change_speed(5);
+      main_motors.change_speed(10);
       //main_motors.set_speed(follow_speed);
       main_motors.go_forward();
       break;
@@ -477,8 +481,11 @@ void IDP_setup() {
   pinMode(led2pin, OUTPUT);
   pinMode(led3pin, OUTPUT);
   leds.blue_on();
+  leds.red_on();
 
   //stops motors straight away
+  // Serial.print("AFMS connection state: ");
+  // Serial.println(AFMS.begin());
   if (AFMS.begin()){
     Serial.println("AFMS connected");
   }

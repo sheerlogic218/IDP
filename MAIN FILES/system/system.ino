@@ -15,7 +15,7 @@ const int ROBOT_GO_WEE_WOO_ANT_SECND    = 10;   //These things are meant to be d
 const int COMPLETED_ANT                 = 11;
 const int COMPLETED                     = 12;
 
- 
+
 // Navigation variables
 int progress = 0;
 int special_mode = -1;
@@ -28,7 +28,7 @@ bool has_block = false;
 long min_time_between_junctions = 750;                 //Failsafe parameter
 int distance_between_centre_junction_and_houses_FIRST = 150;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int distance_between_centre_junction_and_houses_SECOND = 150;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
-int block_approach_speed = 150;
+int block_approach_speed = 180;
 int default_travel_speed = 240;
 int amount_to_go_forward_at_the_end = 300;
 int nook_depth = 350;
@@ -314,7 +314,10 @@ void pick_up_block(){
 
 
     //check if we are wrong
+    
     read_magnet_sensor(); //updates is_magnet
+    Serial.print("Magnet detected: ");
+    Serial.println(is_magnet);
 }
 
 void setup()
