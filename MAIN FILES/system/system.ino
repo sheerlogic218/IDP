@@ -20,11 +20,11 @@ const int COMPLETED                     = 12;
 int progress = 0;
 int special_mode = -1;
 int special_progress = 0;
-long last_turn_time_failsafe = 0;
+unsigned long last_turn_time_failsafe = 0;
 bool block_expected = true;                 
 
 //CONFIGURATION VARIABLES
-long min_time_between_junctions = 750;                 //Failsafe parameter
+unsigned long min_time_between_junctions = 750;                 //Failsafe parameter
 int distance_between_centre_junction_and_houses_FIRST = 150;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int distance_between_centre_junction_and_houses_SECOND = 300;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int block_approach_speed = 180;
@@ -74,14 +74,11 @@ int special_path[][8] = {
  *
  * @param amount Usually either to indicate weather to go up or down.
  */
-void iterate_respective_progress(int amount = 1)
-{
-    if(special_mode == -1)
-    {
+void iterate_respective_progress(int amount = 1){
+    if(special_mode == -1){
         progress = progress + amount;
     }
-    else
-    {
+    else{
         special_progress = special_progress + amount;
     }
 }
@@ -91,32 +88,26 @@ void iterate_respective_progress(int amount = 1)
  *
  * @return The value corresponding to the turn the robot will now perform.
  */
-int get_turn_direction()
-{
+int get_turn_direction(){
     int direction;
     // Failsafe for if we are trying to turn the same junction twice.
-    if(last_turn_time_failsafe + min_time_between_junctions > millis())
-    {
+    if(last_turn_time_failsafe + min_time_between_junctions > millis()) {
         iterate_respective_progress(-1);
     }
 
     // Failsafe for if we are past the end of the path.
-    if(progress > (sizeof(path)/sizeof(path[0])))
-    {
-        state = HIGH;
+    if(progress > ( sizeof(path)/sizeof(path[0]) ) ) {
+        state = HIGH;//
         return COMPLETED;
     }
 
-    if(special_mode == -1)
-    {
+    if(special_mode == -1){
         // Use the next direction from the main path
         direction = path[progress];   
     }
-    else
-    {
+    else{
         // Use the next direction from the special path
-        direction = special_path[special_mode][special_progress];
-        
+        direction = special_path[special_mode][special_progress]; 
     }
     return direction;
 }
@@ -130,11 +121,11 @@ void turn_junction(int turn_direction) {
     iterate_respective_progress(1);     //This is because we will now complete this turn (or find out and undo this assumption)
     switch (turn_direction) {
         case STRAIGHT_ON:
-            Serial.println("Turn direction: STRAIGHT_ON");
+            // Serial.println("Turn direction: STRAIGHT_ON");
             main_motors.move_forward(30);            // Move forward through the junction.
             break;
         case RIGHT:
-            Serial.println("Turn direction: RIGHT");
+            // Serial.println("Turn direction: RIGHT");
             turn_right_until_line();              // Turn right at the junction
             break;
         case LEFT:
@@ -142,13 +133,13 @@ void turn_junction(int turn_direction) {
             turn_left_until_line();               // Turn left at the junction
             break;
         case TESTING:
-            Serial.println("Turn direction: TESTING");
+            // Serial.println("Turn direction: TESTING");
             // Enter testing mode, this is redundant and will be removed soon.
             special_mode = 4;
             turn_junction(get_turn_direction());
             break;
         case SPECIAL_FROM_THE_LEFT:
-            Serial.println("Turn direction: SPECIAL_FROM_THE_LEFT");
+            // Serial.println("Turn direction: SPECIAL_FROM_THE_LEFT");
             // Navigate to approperiate centre from the north-west-most corner of the map headed to the middle.
             read_magnet_sensor();
             special_mode = 0 + is_magnet;
@@ -156,7 +147,7 @@ void turn_junction(int turn_direction) {
             //Leaves the code with the next main direction as the next one and has just set off first special mode
             break;
         case SPECIAL_FROM_THE_RIGHT:
-            Serial.println("Turn direction: SPECIAL_FROM_THE_RIGHT");
+            // Serial.println("Turn direction: SPECIAL_FROM_THE_RIGHT");
             // Navigate to approperiate centre from the north-east-most corner of the map headed to the middle.
             read_magnet_sensor();
             special_mode = 2 + is_magnet;
@@ -164,31 +155,31 @@ void turn_junction(int turn_direction) {
             //Leaves the code with the next main direction as the next one and has just set off first special mode
             break;
         case DROP_OFF_ANT:
-            Serial.println("Turn direction: DROP_OFF_ANT");
+            // Serial.println("Turn direction: DROP_OFF_ANT");
             // Deposit block into the centre after turning right
             turn_junction(get_turn_direction());    //Drop off needs to do this turn now
             drop_off();
             turn_junction(get_turn_direction());
             break;
         case EXPECT_BLOCK_ANT:
-            Serial.println("Turn direction: EXPECT_BLOCK_ANT");
+            // Serial.println("Turn direction: EXPECT_BLOCK_ANT");
             //This should go before the turn command for the next junction
             turn_junction(get_turn_direction());
             block_expected = true;
             break;
         case ROBOT_GO_WEE_WOO_ANT_FIRST:
-            Serial.println("Turn direction: ROBOT_GO_WEE_WOO_ANT");
+            //Serial.println("Turn direction: ROBOT_GO_WEE_WOO_ANT");
             //This is the finding the block in the nooks
             turn_junction(get_turn_direction());
             move_forward_tracking(distance_between_centre_junction_and_houses_FIRST);
-            Serial.println("turning right");
+            //Serial.println("turning right");
             main_motors.turn_90_right();    //Means it always needs to go in a specific way.
-            Serial.println("turned right");
+            //Serial.println("turned right");
             grab_from_nook();
             turn_junction(get_turn_direction());
             break;
         case ROBOT_GO_WEE_WOO_ANT_SECOND:
-            Serial.println("Turn direction: ROBOT_GO_WEE_WOO_ANT");
+            //Serial.println("Turn direction: ROBOT_GO_WEE_WOO_ANT");
             //This is the finding the block in the nooks
             turn_junction(get_turn_direction());
             move_forward_tracking(distance_between_centre_junction_and_houses_SECOND);
@@ -197,21 +188,21 @@ void turn_junction(int turn_direction) {
             turn_junction(get_turn_direction());
             break;
         case SPECIAL_DONE:
-            Serial.println("Turn direction: SPECIAL_DONE");
-            Serial.println("End of special path. Resetting special mode.");
+            // Serial.println("Turn direction: SPECIAL_DONE");
+            // Serial.println("End of special path. Resetting special mode.");
             special_mode = -1;
             special_progress = 0;
             turn_junction(get_turn_direction());
             break;
         case COMPLETED_ANT:
-            Serial.println("Turn direction: COMPLETED_ANT");
+            // Serial.println("Turn direction: COMPLETED_ANT");
             turn_junction(get_turn_direction());
             main_motors.move_forward(amount_to_go_forward_at_the_end);
             main_motors.stop();
             while(true);
             break;
         default:
-            Serial.println("Turn direction: INVALID");
+            // Serial.println("Turn direction: INVALID");
             // Stop the robot for invalid direction
             main_motors.stop();
             break;
@@ -222,13 +213,17 @@ void turn_junction(int turn_direction) {
  * @brief Performs a dropping off maneuver to deliver and deposit a block into a recycling center.
  *        The robot moves forward, releases the block, then reverses back to the line.
  */
-void drop_off()
-{
+void drop_off(){
     leds.blue_blink();
+    unsigned long drop_start = millis();
+    while ( millis() < drop_start + 500UL ){
     line_track_forward();
-    delay(50);
+    }
+    // main_motors.move_forward(60);
+    main_motors.stop();
     Claws.open();
-    main_motors.move_backward(100);
+    delay(100);
+    main_motors.move_backward(150);
     Claws.close();
     // Can't track backwards due to sensor positioning.
     main_motors.set_speed(180);
@@ -251,8 +246,7 @@ void drop_off()
  *        The robot opens wide, moves forward, hopes and reverses.
  *        The system may benefit from further going forward.
  */
-void grab_from_nook()
-{
+void grab_from_nook(){
     Serial.println("Move mode: Praying grab from the nook works");
     //leds.red_on();  //idk what red means, might be being naughty for doing this but i want red.
     main_motors.move_backward(75);
@@ -305,8 +299,7 @@ void pick_up_block(){
     Serial.println(is_magnet);
 }
 
-void setup()
-{
+void setup(){
     IDP_setup();
     //leds.blue_blink();
     Serial.println("moving forward");

@@ -47,7 +47,7 @@ class MainMotors {
     float wheel_radius = 32.5; //mm
     int wheel_base = 170; //mm
     //max angular speed of wheel, radians per second
-    float max_wheel_angular_speed = 1.55*Pi;
+    float max_wheel_angular_speed = 1.47*Pi;
     //(5*360)/(5*2*Pi);
     //double wheel_angular_speed_100 = 0;
     float max_wheel_speed = max_wheel_angular_speed*wheel_radius; //max linear speed of wheel mm/s
@@ -132,7 +132,7 @@ class MainMotors {
 
   void move_forward(int dist) {
     stop();
-    int move_speed = 230;
+    int move_speed = 240;
     set_speed(move_speed);
     unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*max_wheel_speed );
     go_forward();
@@ -142,7 +142,7 @@ class MainMotors {
 
   void move_backward(int dist) {
     stop();
-    int move_speed = 230;
+    int move_speed = 240;
     set_speed(move_speed);
     unsigned long t = ( 1000.0*dist )/( (move_speed/255.0)*max_wheel_speed );
     go_backward();
@@ -330,18 +330,18 @@ bool read_magnet_sensor(){
   valueL = analogRead(A0) - 500;
   valueR = analogRead(A1) - 490;
   float sum = abs(valueL)+abs(valueR);
-  Serial.print(sum);
+  //Serial.print(sum);
   if ( (sum) >= 30 ){
     is_magnet = true;
     leds.green_off();
     leds.red_on();
-    Serial.println("Magnet detected");
+    //Serial.println("Magnet detected");
     return is_magnet;
   }
   is_magnet = false;
   leds.green_on();
   leds.red_off();
-  Serial.println("Magnet not detected");
+  //Serial.println("Magnet not detected");
   return is_magnet;
   }
 
@@ -365,7 +365,7 @@ void turn_left_until_line(){
   main_motors.set_MR_speed(255);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
-  delay(800);
+  delay(900);
   while (get_line_state() != 2){//3
     leds.blue_blink_async();
     if(state);
@@ -384,7 +384,7 @@ void turn_right_until_line(){
   main_motors.set_ML_speed(255);
   main_motors.set_MR_speed(0);
   main_motors.go_forward();
-  delay(800);
+  delay(900);
   while (get_line_state() != 3){//2
     leds.blue_blink_async();
     if(state);
@@ -420,13 +420,13 @@ void turn_right_until_line(){
 //   Block logic moved to system.ino
 // }
 
-void line_track_forward(int follow_speed = 0){
+void line_track_forward(int follow_speed = 240){
   read_line_sensors();
   leds.blue_blink_async();
   switch (get_line_state()){
     case 1:
       //centered
-      main_motors.change_speed(15);
+      main_motors.change_speed(follow_speed/20);
       //main_motors.set_speed(follow_speed);
       main_motors.go_forward();
       break;
@@ -486,10 +486,11 @@ void IDP_setup() {
   // Serial.print("AFMS connection state: ");
   // Serial.println(AFMS.begin());
   if (AFMS.begin()){
-    Serial.println("AFMS connected");
+    //Serial.println("AFMS connected");
+    leds.blue_blink();
   }
   else{
-    Serial.println("AFMS not connected");
+    //Serial.println("AFMS not connected");
     while(1);
   }
   main_motors.stop();
@@ -508,7 +509,7 @@ void IDP_setup() {
 
   //sets up serial communication
   Serial.begin(9600);
-  Serial.println("Serial communication started");
+  //Serial.println("Serial communication started");
 
   //sets the interrupt pin
   attachInterrupt(digitalPinToInterrupt(3), interrupt_function, RISING);
@@ -525,9 +526,10 @@ void IDP_setup() {
   tof_sensor.setMode(tof_sensor.eContinuous,tof_sensor.eHigh); //Set to Back-to-back mode and high precision mode
   tof_sensor.start(); //Laser rangefinder begins to work
 
-
-
   leds.blue_off();
+  // main_motors.turn_90_right();
+  // main_motors.turn_90_left();
+  // while(1);
   //Bailen ill change back the LEDS but i assumed the blinking was cool and we want cool, so i made it cool and data informative ish.
 }
 
