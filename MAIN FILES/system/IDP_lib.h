@@ -327,13 +327,14 @@ void read_line_sensors(){
 bool read_magnet_sensor(){
   float valueL, valueR;
   //const int magnet_threshold = 30;
-  float valueL = analogRead(A0) - 500;
-  float valueR = analogRead(A1) - 490;
-  if ( (abs(valueL)+abs(valueR)) >= 30 ){
+  valueL = analogRead(A0) - 500;
+  valueR = analogRead(A1) - 490;
+  float sum = abs(valueL)+abs(valueR);
+  Serial.print(sum);
+  if ( (sum) >= 30 ){
     is_magnet = true;
     leds.green_off();
     leds.red_on();
-<<<<<<< Updated upstream
     Serial.println("Magnet detected");
     return is_magnet;
   }
@@ -341,23 +342,8 @@ bool read_magnet_sensor(){
   leds.green_on();
   leds.red_off();
   Serial.println("Magnet not detected");
-=======
-    Serial.print("Magnet detected");  
-    return is_magnet;
-  }
-<<<<<<< HEAD
-  // is_magnet = false;
-  // leds.blue_off();
-  // leds.red_on();
-  Serial.print("No magnet detected");
-=======
-  is_magnet = false;
-  leds.green_on();
-  leds.red_off();
->>>>>>> 70d4aa988df5217f20213908b4e3b86b05b52a76
->>>>>>> Stashed changes
   return is_magnet;
-}
+  }
 
 int get_line_state(){
   read_line_sensors();
@@ -441,7 +427,7 @@ void line_track_forward(int follow_speed = 240){
   switch (get_line_state()){
     case 1:
       //centered
-      main_motors.change_speed(5);
+      main_motors.change_speed(10);
       //main_motors.set_speed(follow_speed);
       main_motors.go_forward();
       break;
