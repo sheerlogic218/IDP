@@ -315,6 +315,8 @@ void pick_up_block(){
 
     //check if we are wrong
     read_magnet_sensor(); //updates is_magnet
+    Serial.print("Magnet detected: ");
+    Serial.println(is_magnet);
 }
 
 void setup()

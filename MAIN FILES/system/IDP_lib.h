@@ -14,8 +14,8 @@ DFRobot_VL53L0X tof_sensor;
 
 const byte hallPinLeft = A0; // AH3503 sensor connected to A0 5volt and ground
 const byte hallPinRight = A1; // AH3503 sensor connected to A0 5volt and ground
-const int offsetL = 500; // calibrate zero
-const int offsetR = 490; // calibrate zero
+const int offsetL = 490; // calibrate zero
+const int offsetR = 485; // calibrate zero
 const float span = 0.3617; // calibrate A/D > mT
 const float sensitivity = 3.125; // mV/Gauss
 float valueL, valueR;
@@ -328,16 +328,21 @@ void read_line_sensors(){
 
 bool read_magnet_sensor(){
   valueL = analogRead(hallPinLeft) - offsetL;
+  Serial.println(valueL);
   valueR = analogRead(hallPinRight) - offsetR;
+  Serial.println(valueR);
+  is_magnet = false;
   if ( (abs(valueL)+abs(valueR)) >= magnet_threshold ){
     is_magnet = true;
     leds.green_off();
     leds.red_on();
+    Serial.println("Magnet detected");
     return is_magnet;
   }
   is_magnet = false;
   leds.green_on();
   leds.red_off();
+  Serial.println("Magnet not detected");
   return is_magnet;
 }
 
@@ -481,8 +486,11 @@ void IDP_setup() {
   pinMode(led2pin, OUTPUT);
   pinMode(led3pin, OUTPUT);
   leds.blue_on();
+  leds.red_on();
 
   //stops motors straight away
+  // Serial.print("AFMS connection state: ");
+  // Serial.println(AFMS.begin());
   if (AFMS.begin()){
     Serial.println("AFMS connected");
   }
