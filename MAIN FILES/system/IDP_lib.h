@@ -330,12 +330,23 @@ bool read_magnet_sensor(){
   valueL = analogRead(hallPinLeft) - offsetL;
   Serial.println(valueL);
   valueR = analogRead(hallPinRight) - offsetR;
+<<<<<<< Updated upstream
   Serial.println(valueR);
   is_magnet = false;
+=======
+<<<<<<< HEAD
+  Serial.print("Left Value: ");
+  Serial.print(valueL, 1);
+  Serial.print("    Right Value: ");
+  Serial.print(valueR, 1);
+=======
+>>>>>>> 70d4aa988df5217f20213908b4e3b86b05b52a76
+>>>>>>> Stashed changes
   if ( (abs(valueL)+abs(valueR)) >= magnet_threshold ){
     is_magnet = true;
     leds.green_off();
     leds.red_on();
+<<<<<<< Updated upstream
     Serial.println("Magnet detected");
     return is_magnet;
   }
@@ -343,6 +354,21 @@ bool read_magnet_sensor(){
   leds.green_on();
   leds.red_off();
   Serial.println("Magnet not detected");
+=======
+    Serial.print("Magnet detected");  
+    return is_magnet;
+  }
+<<<<<<< HEAD
+  // is_magnet = false;
+  // leds.blue_off();
+  // leds.red_on();
+  Serial.print("No magnet detected");
+=======
+  is_magnet = false;
+  leds.green_on();
+  leds.red_off();
+>>>>>>> 70d4aa988df5217f20213908b4e3b86b05b52a76
+>>>>>>> Stashed changes
   return is_magnet;
 }
 
