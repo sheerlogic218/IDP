@@ -131,7 +131,7 @@ void turn_junction(int turn_direction) {
     switch (turn_direction) {
         case STRAIGHT_ON:
             Serial.println("Turn direction: STRAIGHT_ON");
-            move_forward_tracking(30);            // Move forward through the junction.
+            main_motors.move_forward(30);            // Move forward through the junction.
             break;
         case RIGHT:
             Serial.println("Turn direction: RIGHT");
@@ -225,7 +225,7 @@ void turn_junction(int turn_direction) {
 void drop_off()
 {
     leds.blue_blink();
-    move_forward_tracking(50);
+    line_track_forward();
     delay(50);
     Claws.open();
     main_motors.move_backward(100);
@@ -310,8 +310,12 @@ void setup()
     IDP_setup();
     //leds.blue_blink();
     Serial.println("moving forward");
-    main_motors.move_forward(300);
+    main_motors.move_forward(250);
     Serial.println("done");
+    while(get_line_state() != 1)
+    {
+      turn_left_until_line();
+    }
 }
 
 /**

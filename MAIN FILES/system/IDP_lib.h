@@ -47,7 +47,7 @@ class MainMotors {
     float wheel_radius = 32.5; //mm
     int wheel_base = 170; //mm
     //max angular speed of wheel, radians per second
-    float max_wheel_angular_speed = 1.4*Pi;
+    float max_wheel_angular_speed = 1.55*Pi;
     //(5*360)/(5*2*Pi);
     //double wheel_angular_speed_100 = 0;
     float max_wheel_speed = max_wheel_angular_speed*wheel_radius; //max linear speed of wheel mm/s
@@ -365,7 +365,7 @@ void turn_left_until_line(){
   main_motors.set_MR_speed(255);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
-  delay(700);
+  delay(500);
   while (get_line_state() != 2){//3
     leds.blue_blink_async();
     if(state);
@@ -384,7 +384,7 @@ void turn_right_until_line(){
   main_motors.set_ML_speed(255);
   main_motors.set_MR_speed(0);
   main_motors.go_forward();
-  delay(700);
+  delay(500);
   while (get_line_state() != 3){//2
     leds.blue_blink_async();
     if(state);
@@ -420,14 +420,13 @@ void turn_right_until_line(){
 //   Block logic moved to system.ino
 // }
 
-void line_track_forward(int follow_speed = 0 ){
+void line_track_forward(int follow_speed = 0){
   read_line_sensors();
   leds.blue_blink_async();
   switch (get_line_state()){
     case 1:
       //centered
-      if (follow_speed != 0){ main_motors.set_speed(follow_speed); }
-      else { main_motors.change_speed(18); }
+      main_motors.change_speed(15);
       //main_motors.set_speed(follow_speed);
       main_motors.go_forward();
       break;
