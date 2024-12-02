@@ -427,7 +427,6 @@ void line_track_forward(int follow_speed = 240){
     case 1:
       //centered
       main_motors.change_speed(follow_speed/20);
-      //main_motors.set_speed(follow_speed);
       main_motors.go_forward();
       break;
     case 2:
@@ -443,7 +442,8 @@ void line_track_forward(int follow_speed = 240){
       main_motors.go_forward();
       break;
     case 4:
-      main_motors.move_backward(5);
+      main_motors.move_backward(20);
+      main_motors.set_speed(10);
       break;
     default: // at junction
       break;
@@ -453,7 +453,6 @@ void line_track_forward(int follow_speed = 240){
 
 //Less accurate distance than regular move_forward due to turning, 
 void move_forward_tracking(int dist, int move_speed = 240){
-  //New function, bailen pls fix if errors exist
   main_motors.stop();
   main_motors.set_speed(move_speed);
   //I think the maths below is incorrect since the speed is nonlinear with power, good simple version
@@ -461,7 +460,7 @@ void move_forward_tracking(int dist, int move_speed = 240){
   main_motors.go_forward();
   unsigned long move_forward_tracking_start = millis();
   while( millis() < move_forward_tracking_start + t ) {
-    move_forward_tracking(move_speed);
+    line_track_forward(move_speed);
   }
   main_motors.stop();
 }

@@ -32,7 +32,7 @@ unsigned long min_time_between_junctions = 750;                 //Failsafe param
 int distance_between_centre_junction_and_houses_FIRST = 150;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int distance_between_centre_junction_and_houses_SECOND = 300;  //Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int block_approach_speed = 180;
-int default_travel_speed = 240;
+int default_travel_speed = 400;
 int amount_to_go_forward_at_the_end = 300;
 int nook_depth = 350;
 
@@ -125,8 +125,6 @@ void turn_junction(int turn_direction) {
     iterate_respective_progress(1);     //This is because we will now complete this turn (or find out and undo this assumption)
     switch (turn_direction) {
         case STRAIGHT_ON:
-            // Serial.println("Turn direction: STRAIGHT_ON");
-            main_motors.move_forward(30);            // Move forward through the junction.
             break;
         case RIGHT:
             // Serial.println("Turn direction: RIGHT");
@@ -349,7 +347,6 @@ void system_decisions() {
 
     // Check for junctions and handle them
     if (get_line_state() >= 5) {
-        block_expected = false;                 //POTENTIAL DEBUG POINT
         turn_junction(get_turn_direction());
         //Once the turn junction command has completely finished we restart the timer,
         // so if it thinks its on the line quickly after it'll get picked up on.
