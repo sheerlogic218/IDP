@@ -497,7 +497,7 @@ void line_track_forward(int follow_speed = 240) {
       break;
     case 4:
       main_motors.move_backward(20);
-      main_motors.set_speed(10);  //this helped the car get going again, probably unnecessary
+      //main_motors.set_speed(10);  //this helped the car get going again, probably unnecessary
       break;
     default:  // at junction
       break;

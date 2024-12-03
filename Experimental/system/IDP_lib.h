@@ -437,6 +437,22 @@ void turn_right_until_line() {
   // main_motors.set_MR_speed(180);
 }
 
+void turn_left_180_until_line(){
+  main_motors.set_MR_speed(240);
+  main_motors.set_ML_speed(240);
+  main_motors.ML_run(BACKWARD);
+  main_motors.MR_run(FORWARD);
+  delay(800);
+  while (get_line_state() != 1) {
+    leds.blue_blink_async();
+    if !(state){
+      main_motors.stop();
+      break;
+    }
+  }
+  delay(80);
+}
+
 // Function for line tracking forward
 // void line_track_forward2(int follow_speed = 220 ) {
 //   read_line_sensors();
@@ -483,7 +499,6 @@ void line_track_forward(int follow_speed = 240) {
       break;
     case 4:
       main_motors.move_backward(20);
-      main_motors.set_speed(10);  //this helped the car get going again, probably unnecessary
       break;
     default:  // at junction
       break;

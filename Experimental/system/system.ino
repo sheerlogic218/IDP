@@ -38,7 +38,7 @@ int distance_between_centre_junction_and_houses_SECOND = 350; // Will likely nee
 int block_approach_speed = 180;
 int default_travel_speed = 400;
 int amount_to_go_forward_at_the_end = 300;
-int nook_depth = 150;
+int nook_depth = 175;
 
 // Path array defining the robot's route
 int path[] = {
@@ -59,7 +59,7 @@ int path[] = {
     ROBOT_GO_WEE_WOO_ANT_FIRST, LEFT, RIGHT, RIGHT, SPECIAL_FROM_THE_MIDDLE,
     // // Handle final hidden block
     // RIGHT, LEFT, ROBOT_GO_WEE_WOO_ANT_SECOND, LEFT, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,
-    // End of path - this just returns it to its starting point as a show off move.
+    // End of path
     LEFT, RIGHT, RIGHT, LEFT, COMPLETED_ANT, STRAIGHT_ON // My cravings to try and make the lobster ram into the house are unparalelled, I think it would be funny.
 };
 
@@ -367,15 +367,7 @@ void pick_up_block()
 void block_180()
 {
   block_180 = false;
-  main_motors.turn_90_left();
-  main_motors.set_speed(180);
-  main_motors.go_backward();
-  // Continue moving backward until a line is detected (at which point the line state is >= 5)
-  while (get_line_state() < 5)
-  {
-    leds.blue_blink_async();
-  }
-  turn_left_until_line();
+  turn_left_180_until_line();
 }
 
 void setup()
@@ -431,10 +423,10 @@ void system_decisions()
     pick_up_block();
   }
 
-  Claws.power_off();
   // Check for junctions and handle them
   if (get_line_state() >= 5)
   {
+    Claws.power_off();
     turn_junction(get_turn_direction());
     // Once the turn junction command has completely finished we restart the timer,
     //  so if it thinks its on the line quickly after it'll get picked up on.
