@@ -31,7 +31,7 @@ bool block_expected = true;
 
 // CONFIGURATION VARIABLES
 unsigned long min_time_between_junctions = 750;                // Failsafe parameter
-int distance_between_centre_junction_and_houses_FIRST = 250;   // Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
+int distance_between_centre_junction_and_houses_FIRST = 220;   // Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int distance_between_centre_junction_and_houses_SECOND = 350;  // Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int block_approach_speed = 180;
 int default_travel_speed = 400;
@@ -55,11 +55,16 @@ int path[] = {
   LEFT, STRAIGHT_ON, LEFT, SPECIAL_FROM_THE_RIGHT,
   // Handle hidden block on this road - not tested this far quite yet
   ROBOT_GO_WEE_WOO_ANT_FIRST, LEFT, RIGHT, RIGHT, SPECIAL_FROM_THE_MIDDLE,
-  // Handle final hidden block
-  RIGHT, LEFT, ROBOT_GO_WEE_WOO_ANT_SECOND, LEFT, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,
-  // End of path - this just returns it to its starting point as a show off move.
-  LEFT, RIGHT, RIGHT, LEFT, COMPLETED_ANT, STRAIGHT_ON  // My cravings to try and make the lobster ram into the house are unparalelled, I think it would be funny.
+  // Go home
+  RIGHT, LEFT, LEFT, RIGHT, COMPLETED_ANT, STRAIGHT_ON
 };
+
+
+//   // Handle final hidden block
+//   RIGHT, LEFT, ROBOT_GO_WEE_WOO_ANT_SECOND, LEFT, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,
+//   // End of path - this just returns it to its starting point as a show off move.
+//   LEFT, RIGHT, RIGHT, LEFT, COMPLETED_ANT, STRAIGHT_ON  // My cravings to try and make the lobster ram into the house are unparalelled, I think it would be funny.
+// };
 
 // Special paths for different modes
 int special_path[][8] = {
@@ -240,7 +245,7 @@ void drop_off() {
   leds.blue_blink();
   unsigned long drop_start = millis();
   Serial.println(drop_start);
-  while (millis() < drop_start + 1000UL) {
+  while (millis() < drop_start + 1100UL) {
     Serial.println(millis());
     line_track_forward();
   }
@@ -338,7 +343,7 @@ void setup()
     IDP_setup();
     // leds.blue_blink();
     Serial.println("moving forward");
-    main_motors.move_forward(400);
+    main_motors.move_forward(150);
     Serial.println("done");
     // while(get_line_state() != 1)
     // {

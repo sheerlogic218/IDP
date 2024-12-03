@@ -47,11 +47,7 @@ public:
   float wheel_radius = 32.5;  // mm
   int wheel_base = 170;       // mm
   // max angular speed of wheel, radians per second
-<<<<<<< Updated upstream
-  float max_wheel_angular_speed = 1.47 * Pi;    // Change this for tuning 90 deg turns
-=======
   float max_wheel_angular_speed = 1.0 * Pi;
->>>>>>> Stashed changes
   //(5*360)/(5*2*Pi);
   // double wheel_angular_speed_100 = 0;
   float max_wheel_speed = max_wheel_angular_speed * wheel_radius;  // max linear speed of wheel mm/s
@@ -406,7 +402,7 @@ void turn_left_until_line() {
   main_motors.set_MR_speed(255);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
-  delay(900);
+  delay(1200);
   while (get_line_state() != 2) {  // 3
     leds.blue_blink_async();
     if (state)
@@ -426,7 +422,7 @@ void turn_right_until_line() {
   main_motors.set_ML_speed(255);
   main_motors.set_MR_speed(0);
   main_motors.go_forward();
-  delay(900);
+  delay(1200);
   while (get_line_state() != 3) {  // 2
     leds.blue_blink_async();
     if (state)
