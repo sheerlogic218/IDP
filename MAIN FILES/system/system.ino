@@ -233,6 +233,7 @@ void drop_off()
     {
         line_track_forward();
     }
+    Claws.power_on();
     main_motors.stop();
     Claws.open();
     delay(100);
@@ -247,6 +248,7 @@ void drop_off()
     {
         leds.blue_blink_async();
     }
+    Claws.power_off();
     Serial.println("Line detected, stopping and closing claws.");
     // Claws.close();
     leds.red_blink();
@@ -264,12 +266,14 @@ void grab_from_nook()
 {
     Serial.println("Move mode: Praying grab from the nook works");
     // leds.red_on();  //idk what red means, might be being naughty for doing this but i want red.
+    Claws.power_on();
     main_motors.move_backward(75);
     Claws.open();
     main_motors.move_forward(nook_depth);
     Claws.close();
     // This needs to be tested for lower numbers
     main_motors.move_backward(50);
+    Claws.power_off();
     block_expected = false;
     // assume no magnet
     is_magnet = false;
@@ -295,10 +299,12 @@ void grab_from_nook()
 // executes the pick_up_block() routine
 void pick_up_block()
 {
+    Claws.power_on();
     main_motors.move_backward(20);
     Claws.open();
     main_motors.move_forward(70);
     Claws.close();
+    Claws.power_off();
     // This needs to be tested for lower numbers
     main_motors.move_backward(50);
     block_expected = false;
@@ -319,6 +325,7 @@ void setup()
     IDP_setup();
     // leds.blue_blink();
     Serial.println("moving forward");
+
     main_motors.move_forward(200);
     Serial.println("done");
     // while(get_line_state() != 1)
