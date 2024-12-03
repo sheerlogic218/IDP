@@ -405,9 +405,7 @@ void turn_left_until_line() {
   delay(1200);
   while (get_line_state() != 2) {  // 3
     leds.blue_blink_async();
-    if (state)
-      ;
-    else {
+    if !(state){
       main_motors.stop();
       break;
     }
@@ -435,6 +433,22 @@ void turn_right_until_line() {
   delay(80);
   // main_motors.set_ML_speed(230);
   // main_motors.set_MR_speed(180);
+}
+
+void turn_left_180_until_line(){
+  main_motors.set_MR_speed(240);
+  main_motors.set_ML_speed(240);
+  main_motors.ML_run(BACKWARD);
+  main_motors.MR_run(FORWARD);
+  delay(800);
+  while (get_line_state() != 1) {
+    leds.blue_blink_async();
+    if !(state){
+      main_motors.stop();
+      break;
+    }
+  }
+  delay(80);
 }
 
 // Function for line tracking forward
