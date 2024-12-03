@@ -47,7 +47,11 @@ public:
   float wheel_radius = 32.5;  // mm
   int wheel_base = 170;       // mm
   // max angular speed of wheel, radians per second
+<<<<<<< Updated upstream
   float max_wheel_angular_speed = 1.47 * Pi;    // Change this for tuning 90 deg turns
+=======
+  float max_wheel_angular_speed = 1.0 * Pi;
+>>>>>>> Stashed changes
   //(5*360)/(5*2*Pi);
   // double wheel_angular_speed_100 = 0;
   float max_wheel_speed = max_wheel_angular_speed * wheel_radius;  // max linear speed of wheel mm/s
@@ -541,11 +545,11 @@ void IDP_setup() {
     ;
   leds.red_off();
 
-  // sets up the servo pins and holds at "0"
-  left_servo.attach(9);
-  right_servo.attach(10);
-  Claws.close();
-  delay(300);
+  // sets up the servo pins and holds at "0". ONLY DONE AS WE GO
+  // left_servo.attach(9);
+  // right_servo.attach(10);
+  // Claws.close();
+  // delay(300);
 
   // sets up serial communication
   Serial.begin(9600);

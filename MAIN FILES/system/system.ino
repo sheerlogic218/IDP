@@ -4,16 +4,18 @@
 const int STRAIGHT_ON = 0;
 const int RIGHT = 1;
 const int LEFT = 2;
-const int SPECIAL_FROM_THE_LEFT = 3;
-const int SPECIAL_FROM_THE_RIGHT = 4;
-const int SPECIAL_DONE = 5;
-const int TESTING = 6;
-const int DROP_OFF_ANT = 7;                  // ANT MEANS After Next Turn
-const int EXPECT_BLOCK_ANT = 8;              // These are a couple of methods that setup the system to perform things on paths
-const int ROBOT_GO_WEE_WOO_ANT_FIRST = 9;    // These things are meant to be done during navigation but called after a junction
-const int ROBOT_GO_WEE_WOO_ANT_SECOND = 10;  // These things are meant to be done during navigation but called after a junction
-const int COMPLETED_ANT = 11;
-const int COMPLETED = 12;
+const int LEFT_180 = 3;
+const int SPECIAL_FROM_THE_LEFT = 4;
+const int SPECIAL_FROM_THE_RIGHT = 5;
+const int SPECIAL_FROM_THE_MIDDLE = 6;
+const int SPECIAL_DONE = 7;
+const int TESTING = 14;
+const int DROP_OFF_ANT = 8;                  // ANT MEANS After Next Turn
+const int EXPECT_BLOCK_ANT = 9;              // These are a couple of methods that setup the system to perform things on paths
+const int ROBOT_GO_WEE_WOO_ANT_FIRST = 10;   // These things are meant to be done during navigation but called after a junction
+const int ROBOT_GO_WEE_WOO_ANT_SECOND = 11;  // These things are meant to be done during navigation but called after a junction
+const int COMPLETED_ANT = 12;
+const int COMPLETED = 13;
 
 // Constants for LED order
 const int RED = 0;
@@ -30,7 +32,7 @@ bool block_expected = true;
 // CONFIGURATION VARIABLES
 unsigned long min_time_between_junctions = 750;                // Failsafe parameter
 int distance_between_centre_junction_and_houses_FIRST = 250;   // Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
-int distance_between_centre_junction_and_houses_SECOND = 150;  // Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
+int distance_between_centre_junction_and_houses_SECOND = 350;  // Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int block_approach_speed = 180;
 int default_travel_speed = 400;
 int amount_to_go_forward_at_the_end = 300;
@@ -44,7 +46,7 @@ int path[] = {
   // Navigate to approperiate centre and end with the second block
   RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,  // Whenever it goes
   // Complete this loop again ready to gather the third block
-  RIGHT, RIGHT, RIGHT, SPECIAL_FROM_THE_LEFT,
+  LEFT_180, SPECIAL_FROM_THE_MIDDLE,
   // Collect the third block and place it in the recycling centre (NB Block already expected whilst turning)
   EXPECT_BLOCK_ANT, LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
   // Collect the fourth block
@@ -52,9 +54,9 @@ int path[] = {
   // Recycle the fourth block
   LEFT, STRAIGHT_ON, LEFT, SPECIAL_FROM_THE_RIGHT,
   // Handle hidden block on this road - not tested this far quite yet
-  ROBOT_GO_WEE_WOO_ANT_FIRST, LEFT, LEFT, LEFT, LEFT, SPECIAL_FROM_THE_RIGHT,
+  ROBOT_GO_WEE_WOO_ANT_FIRST, LEFT, RIGHT, RIGHT, SPECIAL_FROM_THE_MIDDLE,
   // Handle final hidden block
-  LEFT, RIGHT, RIGHT, ROBOT_GO_WEE_WOO_ANT_SECOND, STRAIGHT_ON, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,
+  RIGHT, LEFT, ROBOT_GO_WEE_WOO_ANT_SECOND, LEFT, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,
   // End of path - this just returns it to its starting point as a show off move.
   LEFT, RIGHT, RIGHT, LEFT, COMPLETED_ANT, STRAIGHT_ON  // My cravings to try and make the lobster ram into the house are unparalelled, I think it would be funny.
 };
@@ -69,7 +71,11 @@ int special_path[][8] = {
   { DROP_OFF_ANT, LEFT, RIGHT, LEFT, STRAIGHT_ON, SPECIAL_DONE },
   // Mode 3 - Going to the Magnet centre from the north-west
   { STRAIGHT_ON, LEFT, DROP_OFF_ANT, RIGHT, LEFT, SPECIAL_DONE },
-  // Mode 4 - Testing routine, can be changed, is redundant. Prepared to test house wee_wooing
+  // Mode 4 - Special from the middle, no magnet
+  { STRAIGHT_ON, RIGHT, DROP_OFF_ANT, RIGHT, RIGHT, LEFT, STRAIGHT_ON, SPECIAL_DONE },
+  // Mode 5 - Special from the middle, yes magnet
+  { DROP_OFF_ANT, LEFT, LEFT, SPECIAL_DONE },
+  // Mode 6 - Testing routine, can be changed, is redundant. Prepared to test house wee_wooing
   { ROBOT_GO_WEE_WOO_ANT_SECOND, LEFT, LEFT, LEFT, SPECIAL_DONE }
 };
 
@@ -130,12 +136,23 @@ void turn_junction(int turn_direction) {
       break;
     case LEFT:
       Serial.println("Turn direction: LEFT");
+      turn_left_until_line();
+      break;
+    case LEFT_180:
+      Serial.println("Turn direction: LEFT");
+      turn_left_until_line();  // Turn left at the junction
+      main_motors.set_speed(180);
+      main_motors.go_backward();
+      // Continue moving backward until a line is detected (at which point the line state is >= 5)
+      while (get_line_state() < 5) {
+        leds.blue_blink_async();
+      }
       turn_left_until_line();  // Turn left at the junction
       break;
     case TESTING:
       // Serial.println("Turn direction: TESTING");
       // Enter testing mode, this is redundant and will be removed soon.
-      special_mode = 4;
+      special_mode = 6;
       turn_junction(get_turn_direction());
       break;
     case SPECIAL_FROM_THE_LEFT:
@@ -149,6 +166,13 @@ void turn_junction(int turn_direction) {
       // Serial.println("Turn direction: SPECIAL_FROM_THE_RIGHT");
       // Navigate to approperiate centre from the north-east-most corner of the map headed to the middle.
       special_mode = 2 + is_magnet;
+      turn_junction(get_turn_direction());
+      // Leaves the code with the next main direction as the next one and has just set off first special mode
+      break;
+    case SPECIAL_FROM_THE_MIDDLE:
+      // Serial.println("Turn direction: SPECIAL_FROM_THE_RIGHT");
+      // Navigate to approperiate centre from the north-east-most corner of the map headed to the middle.
+      special_mode = 4 + is_magnet;
       turn_junction(get_turn_direction());
       // Leaves the code with the next main direction as the next one and has just set off first special mode
       break;
@@ -181,7 +205,7 @@ void turn_junction(int turn_direction) {
       // This is the finding the block in the nooks
       turn_junction(get_turn_direction());
       move_forward_tracking(distance_between_centre_junction_and_houses_SECOND);
-      main_motors.turn_90_right();  // Means it always needs to go in a specific way.
+      main_motors.turn_90_left();  // Means it always needs to go in a specific way.
       grab_from_nook();
       turn_junction(get_turn_direction());
       break;
@@ -216,7 +240,7 @@ void drop_off() {
   leds.blue_blink();
   unsigned long drop_start = millis();
   Serial.println(drop_start);
-  while (millis() < drop_start + 1800UL) {
+  while (millis() < drop_start + 1000UL) {
     Serial.println(millis());
     line_track_forward();
   }
@@ -306,19 +330,20 @@ void pick_up_block() {
   read_magnet_sensor();  // updates is_magnet
   Serial.print("Magnet detected: ");
   Serial.println(is_magnet);
+  Claws.power_off();
 }
 
-void setup() {
-  IDP_setup();
-  // leds.blue_blink();
-  Serial.println("moving forward");
-
-  main_motors.move_forward(200);
-  Serial.println("done");
-  // while(get_line_state() != 1)
-  // {
-  //   turn_left_until_line();
-  // }
+void setup()
+{
+    IDP_setup();
+    // leds.blue_blink();
+    Serial.println("moving forward");
+    main_motors.move_forward(400);
+    Serial.println("done");
+    // while(get_line_state() != 1)
+    // {
+    //   turn_left_until_line();
+    // }
 }
 
 /**
