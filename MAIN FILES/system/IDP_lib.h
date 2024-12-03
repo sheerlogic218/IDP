@@ -343,12 +343,17 @@ void read_line_sensors() {
 }
 
 bool read_magnet_sensor() {
-  float valueL, valueR;
+  float valueL = 0, valueR = 0;
   // const int magnet_threshold = 30;
   valueL = analogRead(A0) - 500;
   valueR = analogRead(A1) - 490;
   float sum = abs(valueL) + abs(valueR);
-  Serial.print(sum);
+  Serial.print("Sum: ");
+  Serial.println(sum);
+  Serial.print("Left: ");
+  Serial.println(valueL);
+  Serial.print("Right: ");
+  Serial.println(valueR);
   if ((sum) >= 30) {
     is_magnet = true;
     leds.green_off();

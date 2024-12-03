@@ -216,7 +216,7 @@ void drop_off() {
   leds.blue_blink();
   unsigned long drop_start = millis();
   Serial.println(drop_start);
-  while (millis() < drop_start + 2000UL) {
+  while (millis() < drop_start + 1800UL) {
     Serial.println(millis());
     line_track_forward();
   }
@@ -243,6 +243,7 @@ void drop_off() {
   // Claws.close();
   leds.red_blink();
   main_motors.stop();
+  is_magnet = false;
   //main_motors.move_forward(10);
   Serial.println("Drop off complete.");
 }
