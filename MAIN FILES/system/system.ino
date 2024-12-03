@@ -29,8 +29,8 @@ bool block_expected = true;
 
 // CONFIGURATION VARIABLES
 unsigned long min_time_between_junctions = 750;                // Failsafe parameter
-int distance_between_centre_junction_and_houses_FIRST = 150;   // Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
-int distance_between_centre_junction_and_houses_SECOND = 300;  // Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
+int distance_between_centre_junction_and_houses_FIRST = 250;   // Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
+int distance_between_centre_junction_and_houses_SECOND = 150;  // Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int block_approach_speed = 180;
 int default_travel_speed = 400;
 int amount_to_go_forward_at_the_end = 300;
