@@ -47,7 +47,7 @@ public:
   float wheel_radius = 32.5;  // mm
   int wheel_base = 170;       // mm
   // max angular speed of wheel, radians per second
-  float max_wheel_angular_speed = 1.47 * Pi;
+  float max_wheel_angular_speed = 1.47 * Pi;    // Change this for tuning 90 deg turns
   //(5*360)/(5*2*Pi);
   // double wheel_angular_speed_100 = 0;
   float max_wheel_speed = max_wheel_angular_speed * wheel_radius;  // max linear speed of wheel mm/s
@@ -354,7 +354,7 @@ bool read_magnet_sensor() {
   Serial.println(valueL);
   Serial.print("Right: ");
   Serial.println(valueR);
-  if ((sum) >= 30) {
+  if ((sum) >= 40) {
     is_magnet = true;
     leds.green_off();
     leds.red_on();
