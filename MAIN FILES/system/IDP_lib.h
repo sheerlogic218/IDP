@@ -20,13 +20,15 @@ DFRobot_VL53L0X tof_sensor;
 // const float sensitivity = 3.125; // mV/Gauss
 bool is_magnet = false;  // Magnetic is recyclable is centre with chimmney
 
-Adafruit_MotorShield AFMS = Adafruit_MotorShield();
+Adafruit_MotorShield AFMS = Adafruit_MotorShield(); //create motorshield object
 Adafruit_DCMotor *main_motor_left = AFMS.getMotor(1);   // motor pin 1
 Adafruit_DCMotor *main_motor_right = AFMS.getMotor(2);  // motor pin 2
 
-Servo left_servo;
+//create servo objects
+Servo left_servo; 
 Servo right_servo;
 
+//state variable so we can pause program on interrupt button press
 volatile byte state = LOW;
 
 // create class to control main motors
@@ -53,6 +55,7 @@ public:
   float max_wheel_speed = max_wheel_angular_speed * wheel_radius;  // max linear speed of wheel mm/s
   int sensor_wheel_dist = 110;                                     // mm
 
+  //might be done by default in afms functions but cant hurt to add it here
   int clamp_val(int val) {
     if (val >= 255) {
       return 255;
@@ -129,7 +132,7 @@ public:
     main_motor_left->run(RELEASE);
     main_motor_right->run(RELEASE);
   }
-
+  //moves a set distance
   void move_forward(int dist) {
     stop();
     int move_speed = 240;
@@ -149,7 +152,7 @@ public:
     delay(t);
     stop();
   }
-
+  //semi old functions that shouldnt be relied upon
   void turn_90_left(bool move = true) {
     if (move) {
       move_forward(20);
@@ -185,11 +188,11 @@ MainMotors main_motors;  // create main motors object
 
 class Servo_claws {
 private:
-  int servo_time = 20;
-  int min_angle = 4;
-  int max_angle = 82;
+  int servo_time = 20; //sets the speed, ms/degree
+  int min_angle = 4; // min angle to prevent closing too far and damaging stuff
+  int max_angle = 82; //max angle to not break claws 
   int current_angle = min_angle;
-  int open_angle = 50;
+  int open_angle = 50; //standard open angle for picking up blocks, while not needing huge clearances
   // sets the servos to their "0" point
   void go_zero() {
     for (int angle = current_angle; angle >= min_angle; angle -= 1) {
@@ -244,6 +247,7 @@ public:
   void wide_open() {
     steady_turn(70);
   }
+  // we thought the servos might be slowing down the main motors, doesnt seem to have a huge effect
   void power_off() {
     left_servo.detach();
     right_servo.detach();
@@ -270,6 +274,7 @@ public:
     delay(50);
     red_off();
   }
+  //async avoids us waiting doing nothing, just keep calling where relevant and it'll blink consistently
   void red_blink_async() {
     if (millis() % 500 < 250) {
       red_on();
@@ -354,7 +359,7 @@ bool read_magnet_sensor() {
   Serial.println(valueL);
   Serial.print("Right: ");
   Serial.println(valueR);
-  if ((sum) >= 50) {
+  if ((sum) >= 50) { // threshold value for magnet detection
     is_magnet = true;
     leds.green_off();
     leds.red_on();
@@ -396,21 +401,21 @@ int get_line_state() {
     // else {return 0;} // should never run but cant hurt to have
   }
 }
-
+//general function that works regardless of speed or robot setup, set time turns would break when speed changes
 void turn_left_until_line() {
-  main_motors.move_backward(10);
+  main_motors.move_backward(10);//gives some extra clearance
   main_motors.set_MR_speed(255);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
-  delay(1200);
-  while (get_line_state() != 2) {  // 3
+  delay(1200); //ignore lines "detected" for a bit to help junction stability
+  while (get_line_state() != 2) {  // 3, stop motors once we're just on the right of the line
     leds.blue_blink_async();
     if !(state){
       main_motors.stop();
       break;
     }
   }
-  delay(80);  // 90
+  delay(80);  // 90, this delay is so motors have time to stop and we want a little overshoot
   // main_motors.set_MR_speed(230);
   // main_motors.set_ML_speed(180);
 }
@@ -434,7 +439,7 @@ void turn_right_until_line() {
   // main_motors.set_ML_speed(230);
   // main_motors.set_MR_speed(180);
 }
-
+//inline turn to reverse direction quickly
 void turn_left_180_until_line(){
   main_motors.set_MR_speed(240);
   main_motors.set_ML_speed(240);
@@ -480,13 +485,13 @@ void line_track_forward(int follow_speed = 240) {
   switch (get_line_state()) {
     case 1:
       // centered
-      main_motors.change_speed(follow_speed / 20);
+      main_motors.change_speed(follow_speed / 20); //gradual changes are more stable
       main_motors.go_forward();
       break;
     case 2:
       // right of line
-      main_motors.change_MR_speed(5);
-      main_motors.change_ML_speed(-2);
+      main_motors.change_MR_speed(5); //being at max speed and reducing one wheel increases average speed
+      main_motors.change_ML_speed(-2);//so it still turns when at max speed, small gain in overall speed
       main_motors.go_forward();
       break;
     case 3:
@@ -496,7 +501,7 @@ void line_track_forward(int follow_speed = 240) {
       main_motors.go_forward();
       break;
     case 4:
-      main_motors.move_backward(20);
+      main_motors.move_backward(20); // if off the line while line following, try going backwards to refind line, only a few edge cases where this breaks
       //main_motors.set_speed(10);  //this helped the car get going again, probably unnecessary
       break;
     default:  // at junction
@@ -517,7 +522,7 @@ void move_forward_tracking(int dist, int move_speed = 240) {
   }
   main_motors.stop();
 }
-
+//on button press change state variable to pause code
 void interrupt_function() {
   volatile static unsigned long last_interrupt = 0;
   if (millis() - last_interrupt > 500UL) {
@@ -551,8 +556,7 @@ void IDP_setup() {
   // waits for button press to start program
   leds.red_on();
   pinMode(3, INPUT);
-  while (!digitalRead(3))
-    ;
+  while (!digitalRead(3));
   leds.red_off();
 
   // sets up the servo pins and holds at "0". ONLY DONE AS WE GO
