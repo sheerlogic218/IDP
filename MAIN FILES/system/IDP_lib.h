@@ -354,7 +354,7 @@ bool read_magnet_sensor() {
   Serial.println(valueL);
   Serial.print("Right: ");
   Serial.println(valueR);
-  if ((sum) >= 40) {
+  if ((sum) >= 50) {
     is_magnet = true;
     leds.green_off();
     leds.red_on();

@@ -4,11 +4,15 @@
 #include "Wire.h"
 #include "DFRobot_VL53L0X.h"
 // 15046
+//Experimental
 // 1828
 // setup for leds
 short int led1pin = 8;   // red
 short int led2pin = 2;   // green
 short int led3pin = 11;  // blue
+
+int valueLOffset = 490;
+int valueROffset = 490;
 
 DFRobot_VL53L0X tof_sensor;
 
@@ -345,8 +349,8 @@ void read_line_sensors() {
 bool read_magnet_sensor() {
   float valueL = 0, valueR = 0;
   // const int magnet_threshold = 30;
-  valueL = analogRead(A0) - 500;
-  valueR = analogRead(A1) - 490;
+  valueL = analogRead(A0) - 485;
+  valueR = analogRead(A1) - 485;
   float sum = abs(valueL) + abs(valueR);
   Serial.print("Sum: ");
   Serial.println(sum);
@@ -355,6 +359,52 @@ bool read_magnet_sensor() {
   Serial.print("Right: ");
   Serial.println(valueR);
   if ((sum) >= 40) {
+    is_magnet = true;
+    leds.green_off();
+    leds.red_on();
+    Serial.println("Magnet detected");
+    return is_magnet;
+  }
+  is_magnet = false;
+  leds.green_on();
+  leds.red_off();
+  Serial.println("Magnet not detected");
+  return is_magnet;
+}
+
+void tune_magnet_sensors()
+{
+  valueLOffset = 0;
+  valueROffset = 0;
+  for(int i = 0; i < 20; i++)
+  {
+    valueLOffset += analogRead(A0);
+    valueROffset += analogRead(A1);
+  }
+  valueLOffset = valueLOffset / 20;
+  valueROffset = valueROffset / 20;
+}
+
+bool read_magnet_sensor_average() {
+  float valueL = 0, valueR = 0;
+  // const int magnet_threshold = 30;
+  valueL = 0;
+  valueR = 0;
+  for(int i = 0; i < 20; i++)
+  {
+    valueL += analogRead(A0) - valueLOffset;
+    valueR += analogRead(A1) - valueROffset;
+  }
+  valueL = valueL / 20;
+  valueR = valueR / 20;
+  float sum = abs(valueL) + abs(valueR);
+  Serial.print("Sum: ");
+  Serial.println(sum);
+  Serial.print("Left: ");
+  Serial.println(valueL);
+  Serial.print("Right: ");
+  Serial.println(valueR);
+  if ((sum) >= 4) {
     is_magnet = true;
     leds.green_off();
     leds.red_on();
@@ -402,7 +452,7 @@ void turn_left_until_line() {
   main_motors.set_MR_speed(255);
   main_motors.set_ML_speed(0);
   main_motors.go_forward();
-  delay(1200);
+  delay(1100);
   while (get_line_state() != 2) {  // 3
     leds.blue_blink_async();
     if (state)
@@ -422,7 +472,7 @@ void turn_right_until_line() {
   main_motors.set_ML_speed(255);
   main_motors.set_MR_speed(0);
   main_motors.go_forward();
-  delay(1200);
+  delay(1100);
   while (get_line_state() != 3) {  // 2
     leds.blue_blink_async();
     if (state)
@@ -438,14 +488,14 @@ void turn_right_until_line() {
 }
 
 void turn_left_180_until_line(){
-  main_motors.set_MR_speed(240);
-  main_motors.set_ML_speed(240);
+  main_motors.set_MR_speed(230);
+  main_motors.set_ML_speed(230);
   main_motors.ML_run(BACKWARD);
   main_motors.MR_run(FORWARD);
-  delay(800);
+  delay(1100);
   while (get_line_state() != 1) {
     leds.blue_blink_async();
-    if !(state){
+    if (!state){
       main_motors.stop();
       break;
     }
@@ -454,27 +504,25 @@ void turn_left_180_until_line(){
 }
 
 // Function for line tracking forward
-// void line_track_forward2(int follow_speed = 220 ) {
-//   read_line_sensors();
-//   leds.blue_blink_async();
-//   // Test code for 4 sensor following
-//   if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-//     main_motors.set_speed(follow_speed);
-//     main_motors.go_forward();
-//   } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
-//     main_motors.change_MR_speed(15);
-//     main_motors.go_forward();
-//   } else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
-//     main_motors.change_ML_speed(15);
-//     main_motors.go_forward();
-//   } else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
-//     // Something went wrong
-//     main_motors.move_backward(10);
-//     main_motors.stop();
-//   }
-//   CODE MOVEMENT
-//   Block logic moved to system.ino
-// }
+void line_track_forward2(int follow_speed = 255 ) {
+  read_line_sensors();
+  leds.blue_blink_async();
+  // Test code for 4 sensor following
+  if (ls_state == 1 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+    main_motors.set_speed(follow_speed);
+    main_motors.go_forward();
+  } else if (ls_state == 1 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+    main_motors.change_MR_speed(15);
+    main_motors.go_forward();
+  } else if (ls_state == 0 && rs_state == 1 && fls_state == 0 && frs_state == 0) {
+    main_motors.change_ML_speed(15);
+    main_motors.go_forward();
+  } else if (ls_state == 0 && rs_state == 0 && fls_state == 0 && frs_state == 0) {
+    // Something went wrong
+    main_motors.move_backward(10);
+    main_motors.stop();
+  }
+}
 
 void line_track_forward(int follow_speed = 240) {
   read_line_sensors();
@@ -504,6 +552,7 @@ void line_track_forward(int follow_speed = 240) {
       break;
   }
 }
+
 
 // Less accurate distance than regular move_forward due to turning,
 void move_forward_tracking(int dist, int move_speed = 240) {
@@ -548,6 +597,8 @@ void IDP_setup() {
       ;
   }
   main_motors.stop();
+
+
 
   // waits for button press to start program
   leds.red_on();

@@ -1,4 +1,5 @@
 #include "IDP_lib.h"
+// Experimental
 
 // Constants for turn directions
 const int STRAIGHT_ON = 0;
@@ -32,13 +33,13 @@ bool block_expected = true;
 bool do_block_180 = false; // Turn 180 after block
 
 // CONFIGURATION VARIABLES
-unsigned long min_time_between_junctions = 750;               // Failsafe parameter
+unsigned long min_time_between_junctions = 1250;               // Failsafe parameter
 int distance_between_centre_junction_and_houses_FIRST = 220;  // Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int distance_between_centre_junction_and_houses_SECOND = 220; // Will likely need tuning, may vary between houses. Low reliability of move_forward() right now
 int block_approach_speed = 180;
 int default_travel_speed = 400;
-int amount_to_go_forward_at_the_end = 300;
-int nook_depth = 175;
+int amount_to_go_forward_at_the_end = 250;
+int nook_depth = 120;
 
 // Path array defining the robot's route
 int path[] = {
@@ -56,7 +57,7 @@ int path[] = {
     // Recycle the fourth block
     LEFT, STRAIGHT_ON, LEFT, SPECIAL_FROM_THE_RIGHT,
     // Handle hidden block 5 on this road - not tested this far quite yet
-    ROBOT_GO_WEE_WOO_ANT_FIRST, LEFT, RIGHT, RIGHT, SPECIAL_FROM_THE_MIDDLE,
+    // ßßßßß
     // // Handle final hidden block
     // RIGHT, LEFT, ROBOT_GO_WEE_WOO_ANT_SECOND, LEFT, LEFT, RIGHT, STRAIGHT_ON, RIGHT, SPECIAL_FROM_THE_LEFT,
     // End of path
@@ -161,6 +162,7 @@ void turn_junction(int turn_direction)
     {
       leds.blue_blink_async();
     }
+    main_motors.move_backward(15);
     turn_left_until_line(); // Turn left at the junction
     break;
   case TESTING:
@@ -203,7 +205,7 @@ void turn_junction(int turn_direction)
     turn_junction(get_turn_direction());
     block_expected = true;
     break;
-  case EXPECT_BLOCK_ANT:
+  case EXPECT_BLOCK_180_ANT:
     // Serial.println("Turn direction: EXPECT_BLOCK_ANT");
     // This should go before the turn command for the next junction
     turn_junction(get_turn_direction());
@@ -262,7 +264,7 @@ void drop_off()
   leds.blue_blink();
   unsigned long drop_start = millis();
   Serial.println(drop_start);
-  while (millis() < drop_start + 1100UL)
+  while (millis() < drop_start + 1600UL)
   {
     Serial.println(millis());
     line_track_forward();
@@ -275,7 +277,7 @@ void drop_off()
   main_motors.stop();
   Claws.open();
   delay(100);
-  main_motors.move_backward(250);
+  main_motors.move_backward(160);
   Claws.close();
   // Can't track backwards due to sensor positioning.
   main_motors.set_speed(180);
@@ -306,12 +308,14 @@ void grab_from_nook()
   Serial.println("Move mode: Praying grab from the nook works");
   // leds.red_on();  //idk what red means, might be being naughty for doing this but i want red.
   Claws.power_on();
+  tune_magnet_sensors();
   main_motors.move_backward(75);
   Claws.open();
   main_motors.move_forward(nook_depth);
   Claws.close();
   // This needs to be tested for lower numbers
   main_motors.move_backward(40);
+  read_magnet_sensor_average(); // updates is_magnet
   Claws.power_off();
   block_expected = false;
   // assume no magnet
@@ -320,7 +324,7 @@ void grab_from_nook()
   leds.green_on();
 
   // check if we are wrong
-  read_magnet_sensor(); // updates is_magnet
+  
   // ZAC ILL NEED TO TEST HERE FOR WHY IT ISN'T REVERSING
   main_motors.set_speed(200);
   main_motors.go_backward();
@@ -332,16 +336,17 @@ void grab_from_nook()
   }
   read_magnet_sensor(); // LEDS must be updated
   main_motors.stop();
-  main_motors.move_forward(10);
+  main_motors.move_backward(10);
 }
 
 // executes the pick_up_block() routine
 void pick_up_block()
 {
   Claws.power_on();
+  tune_magnet_sensors();
   main_motors.move_backward(40);
   Claws.open();
-  main_motors.move_forward(110);
+  main_motors.move_forward(90);
   Claws.close();
   Claws.power_off();
   // This needs to be tested for lower numbers
@@ -353,8 +358,7 @@ void pick_up_block()
   //  leds.green_on();
 
   // check if we are wrong
-
-  read_magnet_sensor(); // updates is_magnet
+  read_magnet_sensor_average();
   Serial.print("Magnet detected: ");
   Serial.println(is_magnet);
   Claws.power_off();
@@ -366,7 +370,7 @@ void pick_up_block()
 
 void block_180()
 {
-  block_180 = false;
+  do_block_180 = false;
   turn_left_180_until_line();
 }
 
@@ -377,10 +381,7 @@ void setup()
   Serial.println("moving forward");
   main_motors.move_forward(150);
   Serial.println("done");
-  // while(get_line_state() != 1)
-  // {
-  //   turn_left_until_line();
-  // }
+  tune_magnet_sensors();
 }
 
 /**
